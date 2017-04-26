@@ -1,0 +1,6 @@
+LIBRARY "TBMServer"
+EXPORTS
+	init_tbmServer
+	fini_tbmServer
+	start_tbmServer
+

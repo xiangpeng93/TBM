@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TBMServer", "TBMServer\TBMServer.vcxproj", "{BD06F9B9-B31A-42B9-8ED2-E680FD3A4FEF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TBMClient", "TBMClient\TBMClient.vcxproj", "{500A947E-0B08-4C82-90E3-A8C7E599F91D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TBMServerTest", "TBMServerTest\TBMServerTest.vcxproj", "{34F4C3EA-CB64-4AC3-BF37-4C120D617D0A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TBMClientTest", "TBMClientTest\TBMClientTest.vcxproj", "{97AD728C-9E69-4E81-99E1-BADE7CA259A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BD06F9B9-B31A-42B9-8ED2-E680FD3A4FEF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BD06F9B9-B31A-42B9-8ED2-E680FD3A4FEF}.Debug|Win32.Build.0 = Debug|Win32
+		{BD06F9B9-B31A-42B9-8ED2-E680FD3A4FEF}.Release|Win32.ActiveCfg = Release|Win32
+		{BD06F9B9-B31A-42B9-8ED2-E680FD3A4FEF}.Release|Win32.Build.0 = Release|Win32
+		{500A947E-0B08-4C82-90E3-A8C7E599F91D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{500A947E-0B08-4C82-90E3-A8C7E599F91D}.Debug|Win32.Build.0 = Debug|Win32
+		{500A947E-0B08-4C82-90E3-A8C7E599F91D}.Release|Win32.ActiveCfg = Release|Win32
+		{500A947E-0B08-4C82-90E3-A8C7E599F91D}.Release|Win32.Build.0 = Release|Win32
+		{34F4C3EA-CB64-4AC3-BF37-4C120D617D0A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{34F4C3EA-CB64-4AC3-BF37-4C120D617D0A}.Debug|Win32.Build.0 = Debug|Win32
+		{34F4C3EA-CB64-4AC3-BF37-4C120D617D0A}.Release|Win32.ActiveCfg = Release|Win32
+		{34F4C3EA-CB64-4AC3-BF37-4C120D617D0A}.Release|Win32.Build.0 = Release|Win32
+		{97AD728C-9E69-4E81-99E1-BADE7CA259A3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{97AD728C-9E69-4E81-99E1-BADE7CA259A3}.Debug|Win32.Build.0 = Debug|Win32
+		{97AD728C-9E69-4E81-99E1-BADE7CA259A3}.Release|Win32.ActiveCfg = Release|Win32
+		{97AD728C-9E69-4E81-99E1-BADE7CA259A3}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
