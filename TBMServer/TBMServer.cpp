@@ -7,17 +7,51 @@
 #include <WinSock2.h>
 #include <iostream>
 #include <thread>
+#include <map>
+
 #include "markup.h"
+#include "sqlite3.h"
 
 using namespace std;
 
 #define EXPORT_API __stdcall
 #define MAX_CONNECT 100
 
+#define USER_DB "user.db"
+#define CREATE_USER_DB_TABLE  "CREATE TABLE IF NOT EXISTS USER_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT, PASSWD TEXT, DB_PATH TEXT, REV TEXT)"
+#define INSERT_USER_INO "INSERT INTO USER_INFO(USERNAME,PASSWD) VALUES('%s' , '%s');"
+#define DELETE_USER_INO "DELETE FROM USER_INFO WHERE USERNAME='%s' and PASSWD='%s';"
+
+//注册用户，添加使用
+#define CREATE_COMMON_DB_TABLE "CREATE TABLE IF NOT EXISTS USER_DATA_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT, PASSWD TEXT, REV TEXT)"
+
+#define SELECT_FROM_USER_DB_TABLE "select * from user_table order by name"
+
+struct user_info_struct{
+	string id;
+	string name;
+	string count;
+	string phone;
+	string pswd;
+	string dbpath;
+	string recv;
+};
+
+map<string, user_info_struct> g_user_info_map;
+
 int g_serverSock = -1;
 bool g_isexit = false;
 
+sqlite3 * g_db;
+char* g_errMsg = 0;
+
 thread* g_processThread;
+
+
+void init_db();
+sqlite3 *init_db_by_name(string name);
+int DoRegister(string name , string pswd);
+
 
 string ProcessSelect(const char *cmd)
 {
@@ -25,9 +59,33 @@ string ProcessSelect(const char *cmd)
 	return "";
 }
 
-string ProcessCommonCmd(const char *cmd)
+string ProcessCommonCmd(const char *buffer)
 {
-	cout << "cmd value : " << cmd << endl;
+	cout << "ProcessCommonCmd " << endl;
+	CMarkupSTL cXml;
+	cXml.SetDoc(buffer);
+
+	string user_name = "";
+	string user_pswd = "";
+	if (cXml.FindElem("info", true))
+	{
+		cXml.IntoElem();
+		if (cXml.FindElem("user_name", true))
+		{
+			user_name = cXml.GetData();
+		}
+		if (cXml.FindElem("user_pswd", true))
+		{
+			user_pswd = cXml.GetData();
+		}
+		if (cXml.FindElem("user_cmd", true))
+		{
+			if (cXml.GetData() == "register")
+			{
+				DoRegister(user_name, user_pswd);
+			}
+		}
+	}
 	return "";
 }
 
@@ -94,17 +152,11 @@ void ProcessMsg()
 							{
 								if (cXml.GetData() == "select")
 								{
-									if (cXml.FindElem("value", true))
-									{
-										ProcessSelect(cXml.GetData().c_str());
-									}
+									ProcessSelect(buffer);
 								}
 								else if (cXml.GetData() == "common")
 								{
-									if (cXml.FindElem("value", true))
-									{
-										ProcessCommonCmd(cXml.GetData().c_str());
-									}
+									ProcessCommonCmd(buffer);
 								}
 							}
 						}
@@ -125,6 +177,7 @@ int __stdcall init_tbmServer()
 	{
 		cout << "last error " << GetLastError() << endl;
 	}
+	init_db();
 	return nRet;
 }
 
@@ -175,4 +228,144 @@ int __stdcall fini_tbmServer()
 	g_isexit = true;
 	delete g_processThread;
 	return nRet;
+}
+
+void init_db()
+{
+	char chpath[256];
+	GetModuleFileNameA(NULL, (char*)chpath, sizeof(chpath));
+	string dataPath = chpath;
+	int status = dataPath.find_last_of("\\");
+	dataPath.erase(status);
+
+	dataPath += "\\";
+	dataPath += USER_DB;
+	sqlite3_open(dataPath.c_str(), &g_db);
+	sqlite3_exec(g_db, CREATE_USER_DB_TABLE, NULL, NULL, &g_errMsg);
+	
+	sqlite3_exec(g_db, "PRAGMA synchronous = OFF", NULL, NULL, &g_errMsg);
+	sqlite3_exec(g_db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &g_errMsg);
+	DoRegister("1234","456");
+}
+
+sqlite3 *init_db_by_name(string name)
+{
+	sqlite3 *db;
+	char chpath[256];
+	GetModuleFileNameA(NULL, (char*)chpath, sizeof(chpath));
+	string dataPath = chpath;
+	int status = dataPath.find_last_of("\\");
+	dataPath.erase(status);
+
+	dataPath += "\\";
+	dataPath += name;
+	sqlite3_open(dataPath.c_str(), &db);
+	sqlite3_exec(db, CREATE_COMMON_DB_TABLE, NULL, NULL, &g_errMsg);
+
+	sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, &g_errMsg);
+	sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &g_errMsg);
+	return db;
+}
+
+void close_db(sqlite3 *db)
+{
+	sqlite3_close(db);
+};
+
+int get_all_user_info()
+{
+	char** pResult;
+	int nRow;
+	int nCol;
+	int nResult = sqlite3_get_table(g_db, "select * from USER_INFO;", &pResult, &nRow, &nCol, &g_errMsg);
+	if (nResult != SQLITE_OK)
+	{
+		sqlite3_close(g_db);
+		cout << g_errMsg << endl;
+		sqlite3_free(g_errMsg);
+		return -1;
+	}
+
+
+	int nIndex = nCol;
+	for (int i = 0; i < nRow; i++)
+	{
+		user_info_struct tempStruct;
+		for (int j = 0; j < nCol; j++)
+		{
+			string strOut;
+			strOut += pResult[j];
+			strOut += ":";
+			if (pResult[nIndex] != NULL)
+				strOut += pResult[nIndex];
+			strOut += "  ";
+
+			if (strcmp(pResult[j], "id") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.id = pResult[nIndex];
+			}
+			else if (strcmp(pResult[j], "USERNAME") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.name = pResult[nIndex];
+			}
+			else if (strcmp(pResult[j], "USERCOUNT") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.count = pResult[nIndex];
+			}
+			else if (strcmp(pResult[j], "USERPHONE") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.phone = pResult[nIndex];
+			}
+			else if (strcmp(pResult[j], "PASSWD") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.pswd = pResult[nIndex];
+			}
+			else if (strcmp(pResult[j], "DB_PATH") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.dbpath = pResult[nIndex];
+			}
+			else if (strcmp(pResult[j], "REV") == 0)
+			{
+				if (pResult[nIndex] != NULL)
+					tempStruct.recv = pResult[nIndex];
+			}
+
+			++nIndex;
+			cout << strOut.c_str();
+		}
+
+		g_user_info_map[tempStruct.name] = tempStruct;
+		cout << endl;
+	}
+	sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
+}
+
+int DoRegister(string name,string pswd)
+{
+	get_all_user_info();
+	if (name.empty())
+	{
+		cout << "name is empty." << endl;
+		return -100;
+	}
+	if (g_user_info_map.find(name) != g_user_info_map.end())
+	{
+		cout << "this user was register!" << endl;
+		return -1;
+	}
+	else
+	{
+		char cmd[1024] = { 0 };
+		sprintf(cmd, INSERT_USER_INO, name.c_str(), pswd.c_str());
+		sqlite3_exec(g_db, cmd, NULL, NULL, &g_errMsg);
+		cout << "register success ." << name.c_str() << " " << pswd.c_str();
+	}
+	
+	return 0;
 }
