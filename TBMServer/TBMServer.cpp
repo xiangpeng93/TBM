@@ -183,18 +183,46 @@ public:
 				cout << strOut.c_str();
 			}
 			cout << endl;
+
+			AutoLock autoLock(&m_user_connect_mutex);
 			m_list_callBack_info.push_back(tempInfo);
 
 		}
 		sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
 		close_db(db);
 		return 0;
-	}
+	};
+
+	int GetMsg(char *userName, char *userCount, char *userPhone, char *shopName, char *costMoney, char *costMoneyForUser, char * dataTime)
+	{
+		if (m_list_callBack_info.size() > 0)
+		{
+			list<HISTORY_DATA_INFO>::iterator iter = m_list_callBack_info.begin();
+			if (iter->userName.length() > 0)
+				strcpy_s(userName, iter->userName.length() + 1, iter->userName.c_str());
+			if (iter->userCount.length() > 0)
+				strcpy_s(userCount, iter->userCount.length() + 1, iter->userCount.c_str());
+			if (iter->userPhone.length() > 0)
+				strcpy_s(userPhone, iter->userPhone.length() + 1, iter->userPhone.c_str());
+			if (iter->SHOPNAME.length() > 0)
+				strcpy_s(shopName, iter->SHOPNAME.length() + 1, iter->SHOPNAME.c_str());
+			if (iter->COSTMONEY.length() > 0)
+				strcpy_s(costMoney, iter->COSTMONEY.length() + 1, iter->COSTMONEY.c_str());
+			if (iter->COSTMONEYFORUSER.length() > 0)
+				strcpy_s(costMoneyForUser, iter->COSTMONEYFORUSER.length() + 1, iter->COSTMONEYFORUSER.c_str());
+			if (iter->DATETIME.length() > 0)
+				strcpy_s(dataTime, iter->DATETIME.length() + 1, iter->DATETIME.c_str());
+			AutoLock autoLock(&m_user_connect_mutex);
+			m_list_callBack_info.erase(iter);
+		}
+		return 0;
+	};
 private:
 	
 private:
 	string m_user_name;
 	list<HISTORY_DATA_INFO> m_list_callBack_info;
+	mutex m_user_connect_mutex;
 	
 };
 
@@ -349,6 +377,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 				return "success";
 			}
 
+
 			//add user to db table
 			//delete user to db table
 			//add shop to db table 
@@ -367,6 +396,34 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 						temp->DoCommonSql(user_name, user_pswd, cmd_value);
 						return "success";
 					}
+				}
+			}
+
+			//do select msg
+			if (cXml.GetData() == "selectsql")
+			{
+				string cmd_value = "";
+				if (cXml.FindElem("cmd_msg", true))
+				{
+					cmd_value = cXml.GetData();
+					UserConnect *temp = UserConnectManger::GetInstance()->FindUserConnectByName(user_name);
+					if (temp != NULL)
+					{
+						temp->DoSelectSql(user_name, user_pswd, cmd_value);
+						return "success";
+					}
+				}
+			}
+
+			//get select msg 
+			if (cXml.GetData() == "getmsg")
+			{
+				UserConnect *temp = UserConnectManger::GetInstance()->FindUserConnectByName(user_name);
+				if (temp != NULL)
+				{
+					char tempInfo[8][MAX_PATH] = { 0 };
+					temp->GetMsg(tempInfo[0], tempInfo[1], tempInfo[2], tempInfo[3], tempInfo[4], tempInfo[5], tempInfo[6]);
+					return "success";
 				}
 			}
 		}

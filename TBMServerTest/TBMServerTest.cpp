@@ -16,3 +16,33 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
+
+/*
+for Test
+
+<info>
+<user_name>xp335</user_name>
+<user_pswd>2</user_pswd>
+<cmd>common</cmd>
+<user_cmd>register</user_cmd>
+<cmd_msg></cmd_msg>
+</info>
+
+
+<info>
+<user_name>xp335</user_name>
+<user_pswd>2</user_pswd>
+<cmd>common</cmd>
+<user_cmd>login</user_cmd>
+<cmd_msg></cmd_msg>
+</info>
+
+
+<info>
+<user_name>xp335</user_name>
+<user_pswd>2</user_pswd>
+<cmd>common</cmd>
+<user_cmd>commonsql</user_cmd>
+<cmd_msg>select * from HISTORY_DATA_INFO</cmd_msg>
+</info>
+*/
