@@ -11,7 +11,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	init_tbmServer();
 	start_tbmServer(9090);
-	Sleep(60000);
+	Sleep(600000);
 	fini_tbmServer();
 	return 0;
 }
