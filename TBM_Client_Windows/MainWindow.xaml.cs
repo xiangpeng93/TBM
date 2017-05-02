@@ -58,7 +58,8 @@ namespace TBM_Client_Windows
 				MessageBox.Show(textBox_user.Text.ToString());
 				MessageBox.Show(passwdBox_passwd.Password.ToString());
 			}
-				
+            ManalWindow manal = new ManalWindow();
+            manal.Show();
 		}
 
 		private void img_min_btn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

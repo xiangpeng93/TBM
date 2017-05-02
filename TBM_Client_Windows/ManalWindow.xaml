@@ -1,0 +1,121 @@
+﻿<Window x:Class="TBM_Client_Windows.ManalWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ManalWindow"  Height="720" Width="1100">
+    <Grid>
+        <Grid.RowDefinitions >
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.3*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="0.3*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="5" Grid.Column="0" VerticalAlignment="Center">入账金额:</TextBlock>
+            <TextBox Name="countMoney"  Margin="5"  Grid.Column="1" Text="0"></TextBox>
+            <TextBlock  Margin="5" Grid.Column="2" VerticalAlignment="Center">剩余金额:</TextBlock>
+            <TextBox Name="incomeMoney"  Margin="5"   Grid.Column="3"></TextBox>
+            <Button Name="calcMoney"  Margin="5"   Grid.Column="4" Click="calcMoney_Click" FontSize="15" FontFamily="KaiTi" FontWeight="Normal" MaxWidth="120" HorizontalAlignment="Left">开始计算</Button>
+
+            <Button Name="addUser"  Margin="5"   Grid.Column="6" Click="addUser_Click"  HorizontalAlignment="Right" FontSize="15" FontFamily="KaiTi" FontWeight="Normal" >添加用户</Button>
+        </Grid>
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="5">姓名</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="1" Margin="5">旺旺号</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="2" Margin="5">手机</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="3" Margin="5">商户</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="4" Margin="5">金额</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="5" Margin="5">佣金</TextBlock>
+
+            <ComboBox Name="userName" Grid.Row="1" Grid.Column="0" Margin="-1,4,5,0" SelectionChanged="userName_SelectionChanged" IsEditable="True">
+            </ComboBox>
+
+            <TextBox  Grid.Row="1" Grid.Column="1" Name="userCount"  Margin="1"/>
+            <TextBox Grid.Row="1" Grid.Column="2" Name="userPhone"  Margin="1"/>
+            <ComboBox Name="shopName" SelectedIndex="0" Grid.Row="1" Grid.Column="3"  Margin="2" SelectionChanged="shopName_SelectionChanged" IsEditable="True">
+                <!--<ComboBoxItem>涵香</ComboBoxItem>
+                <ComboBoxItem>小而美</ComboBoxItem>
+                <ComboBoxItem>万妮达</ComboBoxItem>
+                <ComboBoxItem>蝶衣</ComboBoxItem>-->
+            </ComboBox>
+            <TextBox Grid.Row="1" Grid.Column="4" Name="costMoney"   Margin="1"/>
+            <TextBox Grid.Row="1" Grid.Column="5" Name="costForUser"   Margin="1"/>
+            <Button Grid.Row="1" Grid.Column="6" Content="添加" Name="addItem" Click="addItem_Click"  Margin="1"  FontSize="13" FontFamily="KaiTi" FontWeight="Normal" />
+            <Button Grid.Row="1" Grid.Column="7" Content="查询" Name="searchItem" Click="searchItem_Click"  Margin="1"  FontSize="13" FontFamily="KaiTi" FontWeight="Normal" />
+        </Grid>
+        <TextBlock Grid.Row="2"></TextBlock>
+        <Grid Grid.Row="4" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <ListView Name="infoList" HorizontalAlignment="Stretch" Margin="5"  Grid.Column="0" >
+
+                <ListView.ContextMenu>
+                    <ContextMenu Name="menu" >
+                        <!--<MenuItem Header="删除列表数据" Click="MenuItem_Click"></MenuItem>-->
+                        <MenuItem Header="删除历史数据" Name="DeleteDbData" Click="DeleteDbData_Click"></MenuItem>
+                        <MenuItem Header="编辑历史数据" Name="EditHistoryData" Click="EditHistoryData_Click"></MenuItem>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.GroupStyle>
+                    <GroupStyle />
+                </ListView.GroupStyle>
+                <ListView.View >
+
+                    <GridView >
+                        <GridViewColumn Width="50" DisplayMemberBinding="{Binding Path=IDNumber}" Header="序号" />
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserName}" Header="名称" />
+
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserCount}" >旺旺号</GridViewColumn>
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserPhone}">手机</GridViewColumn>
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=ShopName}">商户</GridViewColumn>
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=CostMoney}">金额</GridViewColumn>
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=CostForUser}">佣金</GridViewColumn>
+                        <GridViewColumn Width="170" DisplayMemberBinding="{Binding Path=DateTime}">时间</GridViewColumn>
+                    </GridView>
+
+                </ListView.View>
+            </ListView>
+            <Grid Grid.Column="1" >
+                <StackPanel VerticalAlignment="Top" >
+                    <TextBlock Text="选择查询日期:" Margin="5,10,0,0" ToolTip="使用shift或鼠标点击拖动选择自定义查询范围"/>
+                    <Calendar ToolTip="使用shift或鼠标点击拖动选择自定义查询范围"  Margin="0,10,0,0" Name="calendarCtlStart" Grid.Column="5" VerticalAlignment="Top"  SelectionMode="MultipleRange"  SelectedDatesChanged="calendarCtlStart_SelectionModeChanged"/>
+                    <!--<TextBlock Text="选择查询结束日期:" Margin="5,10,0,0"/>
+                    <Calendar Margin="0,10,0,0" Name="calendarCtlOver" Grid.Column="5" VerticalAlignment="Top" />-->
+                    <Button Name="SaveToXls" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Click="SaveToXls_Click" FontFamily="KaiTi"  FontWeight="Normal" FontSize="15">导出列表数据</Button>
+
+                </StackPanel>
+
+                <StackPanel  VerticalAlignment="Bottom" >
+                    <Button Name="serachHistoryUserData" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch" Click="serachHistoryUserData_Click" FontFamily="KaiTi" FontWeight="Normal" FontSize="15" >查询用户刷单记录</Button>
+                    <!--<Button Name="SaveHistoryData" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch" Click="SaveHistoryData_Click" FontFamily="KaiTi" FontWeight="Normal" FontSize="15" >保存历史数据</Button>-->
+                    <Button Name="ClearData" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Click="ClearData_Click" FontFamily="KaiTi"  FontWeight="Normal" FontSize="15">清空列表数据</Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

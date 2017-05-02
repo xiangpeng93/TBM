@@ -538,7 +538,7 @@ void ProcessMsg()
 					}
 					else if (str_len > 0)
 					{
-						//cout << "recv msg : " << buffer << endl;
+						cout << "recv msg : " << buffer << endl;
 						CMarkupSTL cXml;
 						cXml.SetDoc(buffer);
 						if (cXml.FindElem("info", true))
