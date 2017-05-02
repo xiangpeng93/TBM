@@ -129,8 +129,9 @@
     <Resource Include="loginBacground.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="close.ico" />
-    <Resource Include="min.ico" />
+    <Resource Include="close.png" />
+    <Resource Include="max.png" />
+    <Resource Include="min.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

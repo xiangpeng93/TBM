@@ -80,5 +80,14 @@ namespace TBM_Client_Windows
 		{
 			text_user_paswd_msg.Text = "请联系管理员.";
 		}
+
+		private void img_max_btn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			if (this.WindowState == WindowState.Maximized)
+				this.WindowState = WindowState.Normal;
+			else
+				this.WindowState = WindowState.Maximized;
+
+		}
 	}
 }
