@@ -1,0 +1,12 @@
+LIBRARY "TBMClient"
+EXPORTS
+Init
+Insert
+Select
+Select2
+CommonSql
+Login
+Delete
+GetMsg
+GetMsg2
+Fini

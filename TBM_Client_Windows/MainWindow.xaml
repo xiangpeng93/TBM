@@ -1,0 +1,64 @@
+﻿<Window x:Class="TBM_Client_Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="450" Width="800" WindowStyle="None"  WindowState="Normal" AllowsTransparency="True" WindowStartupLocation="CenterScreen" >
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.Background>
+            <ImageBrush ImageSource="loginBacground.jpg"></ImageBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" Grid.Column="2">
+            <DockPanel VerticalAlignment="Top" HorizontalAlignment="Right">
+                <Image Name="img_min_btn" Source="min.ico" Height="25" Margin="2" MouseLeftButtonDown="img_min_btn_MouseLeftButtonDown"></Image>
+                <Image Name="img_close_btn" Source="close.ico" Height="25"  Margin="2" MouseLeftButtonDown="img_close_btn_MouseLeftButtonDown"></Image>
+            </DockPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="1" Background="Transparent" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10" FocusManager.FocusedElement="{Binding ElementName=textBox_user}">
+                    <TextBlock Text="账号:"   VerticalAlignment="Center" Height="30"  FontSize="20" Margin="0,0,10,0" Foreground="LightGray" ></TextBlock>
+                    <TextBox Name="textBox_user" Background="AliceBlue" Width="180" Height="30" FontSize="18" KeyDown="textBox_user_KeyDown"></TextBox>
+                </DockPanel>
+                <DockPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10"  >
+                    <TextBlock Text="密码:"   VerticalAlignment="Center" Height="30"  FontSize="20" Margin="0,0,10,0" Foreground="LightGray" ></TextBlock>
+                    <PasswordBox Name="passwdBox_passwd"  Background="AliceBlue" Width="180" Height="30" FontSize="18" KeyDown="passwdBox_passwd_KeyDown" ></PasswordBox>
+                </DockPanel>
+                <DockPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="5">
+                    <TextBlock Name="text_user_paswd_msg" FontSize="15" Foreground="PeachPuff"></TextBlock>
+                </DockPanel>
+
+            </Grid>
+            <Grid Grid.Row="1" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Name="btn_login" Click="btn_login_Click" Content="登录" HorizontalAlignment="Center" VerticalAlignment="Center" Width="230" Height="30" Margin="0,0,0,0" FontSize="15" Foreground="Black" Background="#FFD3C9C9"  />
+                <Button Grid.Row="1" Name="btn_register" Content="注册" Background="#FFD3C9C9" HorizontalAlignment="Center" VerticalAlignment="Center" Width="230" Height="30" Margin="0,0,0,0" FontSize="15" Foreground="Black"></Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

@@ -25,10 +25,9 @@ using namespace std;
 #define DELETE_USER_INO "DELETE FROM USER_INFO WHERE USERNAME='%s' and PASSWD='%s';"
 
 //注册用户，添加使用
-#define CREATE_COMMON_DB_TABLE "CREATE TABLE IF NOT EXISTS USER_DATA_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT, PASSWD TEXT, REV TEXT)"
+#define CREATE_COMMON_DB_TABLE "CREATE TABLE IF NOT EXISTS USER_DATA_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT, REV TEXT)"
 #define CREATE_SHOP_INFO_TABLE "CREATE TABLE IF NOT EXISTS SHOP_DATA_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT)"
 #define CREATE_HISTROY_DATA_TABLE "CREATE TABLE IF NOT EXISTS HISTORY_DATA_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT,SHOPNAME TEXT,COSTMONEY TEXT,COSTMONEYFORUSER TEXT,DATETIME datetime)"
-
 
 #define SELECT_FROM_USER_DB_TABLE "select * from user_table order by name"
 
@@ -116,7 +115,12 @@ public:
 		if (isFindInUserInfoMap(name, pswd) == false)
 			return -1;
 		sqlite3 *db = init_db_by_name(name);
-		sqlite3_exec(db, sql.c_str(), NULL, NULL, &g_errMsg);
+		int nRet = sqlite3_exec(db, sql.c_str(), NULL, NULL, &g_errMsg);
+		if (nRet != SQLITE_OK)
+		{
+			cout << g_errMsg << endl;
+			sqlite3_free(g_errMsg);
+		}
 		close_db(db);
 		return 0;
 	}
@@ -128,10 +132,9 @@ public:
 		char** pResult;
 		int nRow;
 		int nCol;
-		int nResult = sqlite3_get_table(db, "select * from USER_INFO;", &pResult, &nRow, &nCol, &g_errMsg);
+		int nResult = sqlite3_get_table(db, sql.c_str(), &pResult, &nRow, &nCol, &g_errMsg);
 		if (nResult != SQLITE_OK)
 		{
-			sqlite3_close(db);
 			cout << g_errMsg << endl;
 			sqlite3_free(g_errMsg);
 			return -1;
@@ -147,37 +150,39 @@ public:
 				strOut += pResult[j];
 				strOut += ":";
 				if (pResult[nIndex] != NULL)
+				{
 					strOut += pResult[nIndex];
-				strOut += "  ";
-				
-				if (strcmp(pResult[i], "USERNAME") == 0)
-				{
-					tempInfo.userName = pResult[nIndex];
+					
+					if (strcmp(pResult[j], "USERNAME") == 0)
+					{
+						tempInfo.userName = pResult[nIndex];
+					}
+					else if (strcmp(pResult[j], "USERCOUNT") == 0)
+					{
+						tempInfo.userCount = pResult[nIndex];
+					}
+					else if (strcmp(pResult[j], "USERPHONE") == 0)
+					{
+						tempInfo.userPhone = pResult[nIndex];
+					}
+					else if (strcmp(pResult[j], "SHOPNAME") == 0)
+					{
+						tempInfo.SHOPNAME = pResult[nIndex];
+					}
+					else if (strcmp(pResult[j], "COSTMONEY") == 0)
+					{
+						tempInfo.COSTMONEY = pResult[nIndex];
+					}
+					else if (strcmp(pResult[j], "COSTMONEYFORUSER") == 0)
+					{
+						tempInfo.COSTMONEYFORUSER = pResult[nIndex];
+					}
+					else if (strcmp(pResult[j], "DATETIME") == 0)
+					{
+						tempInfo.DATETIME = pResult[nIndex];
+					}
 				}
-				else if (strcmp(pResult[i], "USERCOUNT") == 0)
-				{
-					tempInfo.userCount = pResult[nIndex];
-				}
-				else if (strcmp(pResult[i], "USERPHONE") == 0)
-				{
-					tempInfo.userPhone = pResult[nIndex];
-				}
-				else if (strcmp(pResult[i], "SHOPNAME") == 0)
-				{
-					tempInfo.SHOPNAME = pResult[nIndex];
-				}
-				else if (strcmp(pResult[i], "COSTMONEY") == 0)
-				{
-					tempInfo.COSTMONEY = pResult[nIndex];
-				}
-				else if (strcmp(pResult[i], "COSTMONEYFORUSER") == 0)
-				{
-					tempInfo.COSTMONEYFORUSER = pResult[nIndex];
-				}
-				else if (strcmp(pResult[i], "DATETIME") == 0)
-				{
-					tempInfo.DATETIME = pResult[nIndex];
-				}
+				strOut += " ";
 
 				++nIndex;
 				cout << strOut.c_str();
@@ -186,7 +191,7 @@ public:
 
 			AutoLock autoLock(&m_user_connect_mutex);
 			m_list_callBack_info.push_back(tempInfo);
-
+			cout << m_list_callBack_info.size() << endl;
 		}
 		sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
 		close_db(db);
@@ -197,6 +202,7 @@ public:
 	{
 		if (m_list_callBack_info.size() > 0)
 		{
+			AutoLock autoLock(&m_user_connect_mutex);
 			list<HISTORY_DATA_INFO>::iterator iter = m_list_callBack_info.begin();
 			if (iter->userName.length() > 0)
 				strcpy_s(userName, iter->userName.length() + 1, iter->userName.c_str());
@@ -212,8 +218,9 @@ public:
 				strcpy_s(costMoneyForUser, iter->COSTMONEYFORUSER.length() + 1, iter->COSTMONEYFORUSER.c_str());
 			if (iter->DATETIME.length() > 0)
 				strcpy_s(dataTime, iter->DATETIME.length() + 1, iter->DATETIME.c_str());
-			AutoLock autoLock(&m_user_connect_mutex);
+			
 			m_list_callBack_info.erase(iter);
+			cout << m_list_callBack_info.size() << endl;
 		}
 		return 0;
 	};
@@ -244,7 +251,7 @@ public:
 			m_mapUserConnect[id] = usc;
 			return 0;
 		}
-		cout << "id is exit!" << id<< endl;
+		cout << "id is exist!" << id<< endl;
 		return -1;
 	};
 
@@ -258,7 +265,7 @@ public:
 			m_mapUserConnect.erase(m_mapUserConnect.find(id));
 			return 0;
 		}
-		cout << "id not exit! "<<id << endl;
+		cout << "id not exist! "<<id << endl;
 		return -1;
 	};
 
@@ -277,7 +284,7 @@ public:
 				return 0;
 			}
 		}
-		cout << "name not exit! "<<name.c_str() << endl;
+		cout << "name not exist! "<<name.c_str() << endl;
 		return -1;
 	};
 
@@ -287,7 +294,7 @@ public:
 		{
 			return m_mapUserConnect[id];
 		}
-		cout << "id not exit! " << id << endl;
+		cout << "id not exist! " << id << endl;
 		return NULL;
 	};
 
@@ -302,7 +309,7 @@ public:
 				return iter->second;
 			}
 		}
-		cout << "name not exit! " << name.c_str() << endl;
+		cout << "name not exist! " << name.c_str() << endl;
 		return NULL;
 	};
 	
@@ -329,16 +336,9 @@ bool isFindInUserInfoMap(string user_name, string user_pswd)
 	return false;
 }
 
-string ProcessSelect(const char *cmd)
+string ProcessSelect(int clnt_sock, const char *buffer)
 {
 	cout << "ProcessSelect " << endl;
-
-	return "";
-}
-
-string ProcessCommonCmd(int clnt_sock, const char *buffer)
-{
-	cout << "ProcessCommonCmd " << endl;
 	CMarkupSTL cXml;
 	cXml.SetDoc(buffer);
 
@@ -357,48 +357,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 		}
 		if (cXml.FindElem("user_cmd", true))
 		{
-			if (cXml.GetData() == "register")
-			{
-				DoRegister(user_name, user_pswd);
-			}
-
-			if (cXml.GetData() == "login")
-			{
-				if (isFindInUserInfoMap(user_name, user_pswd))
-				{
-					UserConnectManger::GetInstance()->AddUserConnect(clnt_sock, user_name);
-					return "success";
-				}
-			}
-
-			if (cXml.GetData() == "logout")
-			{
-				UserConnectManger::GetInstance()->DeleteUserConnectByName(user_name);
-				return "success";
-			}
-
-
-			//add user to db table
-			//delete user to db table
-			//add shop to db table 
-			//delete shop to db table
-			//add history data to db table
-			//delete history data to db table
-			if (cXml.GetData() == "commonsql")
-			{
-				string cmd_value = "";
-				if (cXml.FindElem("cmd_msg", true))
-				{
-					cmd_value = cXml.GetData();
-					UserConnect *temp = UserConnectManger::GetInstance()->FindUserConnectByName(user_name);
-					if (temp != NULL)
-					{
-						temp->DoCommonSql(user_name, user_pswd, cmd_value);
-						return "success";
-					}
-				}
-			}
-
+			//select from db
 			//do select msg
 			if (cXml.GetData() == "selectsql")
 			{
@@ -410,25 +369,116 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 					if (temp != NULL)
 					{
 						temp->DoSelectSql(user_name, user_pswd, cmd_value);
+						send(clnt_sock, "success", strlen("success"), 0);
 						return "success";
 					}
 				}
 			}
-
 			//get select msg 
 			if (cXml.GetData() == "getmsg")
 			{
 				UserConnect *temp = UserConnectManger::GetInstance()->FindUserConnectByName(user_name);
 				if (temp != NULL)
 				{
-					char tempInfo[8][MAX_PATH] = { 0 };
+					char tempInfo[7][1024] = { 0 };
 					temp->GetMsg(tempInfo[0], tempInfo[1], tempInfo[2], tempInfo[3], tempInfo[4], tempInfo[5], tempInfo[6]);
+					CMarkupSTL cXmlRsp;
+					cXmlRsp.AddElem("username", tempInfo[0]);
+					cXmlRsp.AddElem("usercount", tempInfo[1]);
+					cXmlRsp.AddElem("userphone", tempInfo[2]);
+					cXmlRsp.AddElem("shopname", tempInfo[3]);
+					cXmlRsp.AddElem("costmoney", tempInfo[4]);
+					cXmlRsp.AddElem("costmoneyforuser", tempInfo[5]);
+					cXmlRsp.AddElem("datetime", tempInfo[6]);
+
+					send(clnt_sock, cXmlRsp.GetDoc().c_str(), cXmlRsp.GetDoc().length(), 0);
 					return "success";
 				}
 			}
 		}
 	}
-	return "";
+	send(clnt_sock, "failed", strlen("failed"), 0);
+	return "failed";
+}
+
+string ProcessCommonCmd(int clnt_sock, const char *buffer)
+{
+	cout << "ProcessCommonCmd " << endl;
+	CMarkupSTL cXml;
+	cXml.SetDoc(buffer);
+
+	string user_name = "";
+	string user_pswd = "";
+	do{
+		if (cXml.FindElem("info", true))
+		{
+			cXml.IntoElem();
+			if (cXml.FindElem("user_name", true))
+			{
+				user_name = cXml.GetData();
+			}
+			if (cXml.FindElem("user_pswd", true))
+			{
+				user_pswd = cXml.GetData();
+			}
+			if (cXml.FindElem("user_cmd", true))
+			{
+				if (cXml.GetData() == "register")
+				{
+					DoRegister(user_name, user_pswd);
+				}
+
+				if (cXml.GetData() == "login")
+				{
+					if (isFindInUserInfoMap(user_name, user_pswd))
+					{
+						if (-1 == UserConnectManger::GetInstance()->AddUserConnect(clnt_sock, user_name))
+						{
+							send(clnt_sock, "this user is login.", strlen("this user is login."), 0);
+							return "success";
+						}
+						send(clnt_sock, "success", strlen("success"), 0);
+						return "success";
+					}
+				}
+
+				if (cXml.GetData() == "logout")
+				{
+					UserConnectManger::GetInstance()->DeleteUserConnectByName(user_name);
+					send(clnt_sock, "success", strlen("success"), 0);
+					return "success";
+				}
+
+
+				//add user to db table
+				//delete user to db table
+				//add shop to db table 
+				//delete shop to db table
+				//add history data to db table
+				//delete history data to db table
+				if (cXml.GetData() == "commonsql")
+				{
+					string cmd_value = "";
+					if (cXml.FindElem("cmd_msg", true))
+					{
+						cmd_value = cXml.GetData();
+						UserConnect *temp = UserConnectManger::GetInstance()->FindUserConnectByName(user_name);
+						if (temp != NULL)
+						{
+							temp->DoCommonSql(user_name, user_pswd, cmd_value);
+							send(clnt_sock, "success", strlen("success"), 0);
+							return "success";
+						}
+					}
+				}
+
+
+			}
+		}
+	} while (0);
+	
+	send(clnt_sock, "failed", strlen("failed"), 0);
+	return "failed";
 }
 
 void ProcessMsg()
@@ -478,12 +528,17 @@ void ProcessMsg()
 					if (str_len <= 0)//disconnect
 					{
 						FD_CLR(i, &freads);
+						if (NULL != UserConnectManger::GetInstance()->FindUserConnectById(i))
+						{
+							UserConnectManger::GetInstance()->DeleteUserConnectById(i);
+						}
+
 						closesocket(i);
 						cout << "disconnect client " << i << endl;
 					}
 					else if (str_len > 0)
 					{
-						cout << "recv msg : " << buffer << endl;
+						//cout << "recv msg : " << buffer << endl;
 						CMarkupSTL cXml;
 						cXml.SetDoc(buffer);
 						if (cXml.FindElem("info", true))
@@ -493,7 +548,7 @@ void ProcessMsg()
 							{
 								if (cXml.GetData() == "select")
 								{
-									cout << ProcessSelect(buffer).c_str();
+									cout << ProcessSelect(i, buffer).c_str();
 								}
 								else if (cXml.GetData() == "common")
 								{
@@ -501,7 +556,7 @@ void ProcessMsg()
 								}
 							}
 						}
-						send(i, buffer, str_len, 0);
+						//send(i, buffer, str_len, 0);
 					}
 				}
 			}
@@ -713,7 +768,6 @@ int DoRegister(string name,string pswd)
 		nResult = sqlite3_exec(g_db, cmd, NULL, NULL, &g_errMsg);
 		if (nResult != SQLITE_OK)
 		{
-			
 			cout << g_errMsg << endl;
 			sqlite3_free(g_errMsg);
 			return -1;
