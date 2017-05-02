@@ -19,8 +19,8 @@
 
         <Grid Grid.Row="0" Grid.Column="2">
             <DockPanel VerticalAlignment="Top" HorizontalAlignment="Right">
-                <Image Name="img_min_btn" Source="min.ico" Height="25" Margin="2" MouseLeftButtonDown="img_min_btn_MouseLeftButtonDown"></Image>
-                <Image Name="img_close_btn" Source="close.ico" Height="25"  Margin="2" MouseLeftButtonDown="img_close_btn_MouseLeftButtonDown"></Image>
+                <Image Name="img_min_btn" Source="min.ico" Height="25" Margin="2" MouseLeftButtonDown="img_min_btn_MouseLeftButtonDown" ToolTip="最小化" ToolTipService.Placement="Top"></Image>
+                <Image Name="img_close_btn" Source="close.ico" Height="25"  Margin="2" MouseLeftButtonDown="img_close_btn_MouseLeftButtonDown" ToolTip="关闭程序" ToolTipService.Placement="Top"></Image>
             </DockPanel>
         </Grid>
 
@@ -57,7 +57,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Button Grid.Row="0" Name="btn_login" Click="btn_login_Click" Content="登录" HorizontalAlignment="Center" VerticalAlignment="Center" Width="230" Height="30" Margin="0,0,0,0" FontSize="15" Foreground="Black" Background="#FFD3C9C9"  />
-                <Button Grid.Row="1" Name="btn_register" Content="注册" Background="#FFD3C9C9" HorizontalAlignment="Center" VerticalAlignment="Center" Width="230" Height="30" Margin="0,0,0,0" FontSize="15" Foreground="Black"></Button>
+                <Button Grid.Row="1" Name="btn_register" Click="btn_register_Click" Content="注册" Background="#FFD3C9C9" HorizontalAlignment="Center" VerticalAlignment="Center" Width="230" Height="30" Margin="0,0,0,0" FontSize="15" Foreground="Black"></Button>
             </Grid>
         </Grid>
     </Grid>

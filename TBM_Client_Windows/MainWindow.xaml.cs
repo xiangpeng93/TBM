@@ -75,5 +75,10 @@ namespace TBM_Client_Windows
 		{
 			this.DragMove(); 
 		}
+
+		private void btn_register_Click(object sender, RoutedEventArgs e)
+		{
+			text_user_paswd_msg.Text = "请联系管理员.";
+		}
 	}
 }
