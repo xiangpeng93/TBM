@@ -11,11 +11,11 @@ using namespace std;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Init("127.0.0.1",9090);
-	Login("xp335", "2");
-	//Select("select * from HISTORY_DATA_INFO");
-	//Select("select * from SHOP_DATA_INFO");
-	Select("select * from USER_DATA_INFO");
+	Init();
+	Login("127.0.0.1", 9090,"xp335", "2");
+	//Select("select * from HISTORYDATA");
+	//Select("select * from SHOPINFO");
+	Select("select * from USERINFO");
 
 	char tempInfo[7][1024] = { 0 };
 	do

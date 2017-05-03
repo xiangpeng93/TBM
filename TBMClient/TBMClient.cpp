@@ -42,11 +42,13 @@ string assemblyMsg(const char *userName, const char *paswd, const char* cmd, con
 <cmd_msg></cmd_msg>
 </info>
 */
-int __stdcall Login(char *userName, char *userPaswd)
+int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 {
 	int nRet = 0;
 	g_userName = userName;
 	g_userPaswd = userPaswd;
+	g_ip = ip;
+	g_port = port;
 
 	SOCKADDR_IN clntAddr;
 	clntAddr.sin_family = PF_INET;
@@ -88,7 +90,7 @@ int logout(char *userName, char *userPaswd)
 	return 0;
 };
 
-void __stdcall Init(char* ip,int port)
+void __stdcall Init()
 {
 	int nRet = -1;
 	WSAData wsData;
@@ -106,8 +108,7 @@ void __stdcall Init(char* ip,int port)
 
 		return;
 	}
-	g_ip = ip;
-	g_port = port;
+	
 }
 
 void __stdcall Fini()
@@ -132,7 +133,7 @@ void __stdcall Insert(char *sql)
 <user_pswd>2</user_pswd>
 <cmd>select</cmd>
 <user_cmd>selectsql</user_cmd>
-<cmd_msg>select * from HISTORY_DATA_INFO</cmd_msg>
+<cmd_msg>select * from HISTORYDATA</cmd_msg>
 </info>
 */
 void  __stdcall Select(char *sql)
@@ -177,7 +178,7 @@ void __stdcall Delete2(char *sql)
 <user_pswd>2</user_pswd>
 <cmd>common</cmd>
 <user_cmd>commonsql</user_cmd>
-<cmd_msg>select * from HISTORY_DATA_INFO</cmd_msg>
+<cmd_msg>select * from HISTORYDATA</cmd_msg>
 </info>
 */
 void __stdcall CommonSql(char *sql)

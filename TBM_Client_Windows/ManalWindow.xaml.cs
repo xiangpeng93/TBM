@@ -22,15 +22,15 @@ namespace TBM_Client_Windows
     /// </summary>
     public partial class ManalWindow : MetroWindow
     {
-       public string sqlUserInfoOrderByName = "select * from USER_DATA_INFO order by USERNAME";
-        public string sqlUserInfo = "select * from USER_DATA_INFO ";
-        public string sqlShop = "select * from SHOP_DATA_INFO order by USERNAME";
+       public string sqlUserInfoOrderByName = "select * from USERINFO order by USERNAME";
+        public string sqlUserInfo = "select * from USERINFO ";
+        public string sqlShop = "select * from SHOPINFO order by USERNAME";
 
-        public string searchHistoryData = "select * from HISTORY_DATA_INFO ";
+        public string searchHistoryData = "select * from HISTORYDATA ";
 
-        public string InsertHistoryData = "INSERT INTO HISTORY_DATA_INFO (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
+        public string InsertHistoryData = "INSERT INTO HISTORYDATA (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
 
-        string cmdDeleteHistoryData = "delete from HISTORY_DATA_INFO where ";
+        string cmdDeleteHistoryData = "delete from HISTORYDATA where ";
         [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern void Insert(string sql);
 

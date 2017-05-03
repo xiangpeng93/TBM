@@ -34,7 +34,7 @@ namespace TBM_Client_Windows
 		string tDatetime;
         int tTableType;
 
-		string HistoryDataTable = "UPDATE HISTORY_DATA_INFO ";
+		string HistoryDataTable = "UPDATE HISTORYDATA ";
         ManalWindow g_mangerMoney;
         public updateHistoryData(ManalWindow mangerMoney)
 		{

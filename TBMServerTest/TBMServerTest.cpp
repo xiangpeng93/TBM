@@ -4,14 +4,20 @@
 #include "stdafx.h"
 #include"../TBMServer/TBMServer.h"
 #pragma comment (lib,"../debug/TBMServer")
-
+#include <iostream>
+using namespace std;
 #include <Windows.h>
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	init_tbmServer();
 	start_tbmServer(9090);
-	Sleep(600000);
+	char cmd = 0;
+	while (cmd != 'q')
+	{
+		cin >> cmd;
+		Sleep(1000);
+	}
 	fini_tbmServer();
 	return 0;
 }
@@ -42,7 +48,7 @@ for Test
 <user_pswd>2</user_pswd>
 <cmd>select</cmd>
 <user_cmd>selectsql</user_cmd>
-<cmd_msg>select * from HISTORY_DATA_INFO</cmd_msg>
+<cmd_msg>select * from HISTORYDATA</cmd_msg>
 </info>
 
 <info>

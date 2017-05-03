@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-void __stdcall Init(char* ip, int port);
-int __stdcall Login(char *userName, char *userPaswd);
+void __stdcall Init();
+int __stdcall Login(char* ip, int port,char *userName, char *userPaswd);
 void __stdcall Insert(char *sql);
 void __stdcall Select(char *sql);
 void __stdcall Delete(char *sql);
