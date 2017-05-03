@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TBM_Client_Windows;
 
-namespace 刷单管理
+namespace TBM_Client_Windows
 {
     /// <summary>
     /// SaveToXls.xaml 的交互逻辑

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MahApps.Metro.Controls;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,39 +14,30 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using 刷单管理;
 
 namespace TBM_Client_Windows
 {
     /// <summary>
     /// ManalWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class ManalWindow : Window
+    public partial class ManalWindow : MetroWindow
     {
-       public string sqlUserInfoOrderByName = "select * from USERINFO order by USERNAME";
-        public string sqlUserInfo = "select * from USERINFO ";
-        public string sqlShop = "select * from SHOPINFO order by USERNAME";
+       public string sqlUserInfoOrderByName = "select * from USER_DATA_INFO order by USERNAME";
+        public string sqlUserInfo = "select * from USER_DATA_INFO ";
+        public string sqlShop = "select * from SHOP_DATA_INFO order by USERNAME";
 
-        public string searchHistoryData = "select * from HISTORYDATA ";
-        public string searchHistoryDataUser = "select * from USERDATAHISTORY ";
+        public string searchHistoryData = "select * from HISTORY_DATA_INFO ";
 
-        public string InsertHistoryData = "INSERT INTO HISTORYDATA (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
-        public string InsertHistoryDataUser = "INSERT INTO USERDATAHISTORY (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
-        public string updateHistoryDataUser = "UPDATE USERDATAHISTORY ";
+        public string InsertHistoryData = "INSERT INTO HISTORY_DATA_INFO (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
 
-        string cmdDeleteHistoryData = "delete from HISTORYDATA where ";
-        string cmdDeleteHistoryDataUser = "delete from USERDATAHISTORY where ";
+        string cmdDeleteHistoryData = "delete from HISTORY_DATA_INFO where ";
         [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern void Insert(string sql);
 
         [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern void Delete(string sql);
 
-        [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-        public static extern void Init(string ip,int port);
-
-        [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-        public static extern int Login(string userName, string paswd);
+        
 
         [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern void Fini();
@@ -108,8 +100,7 @@ namespace TBM_Client_Windows
             ListCollectionView cs = new ListCollectionView(Users);
             infoList.ItemsSource = cs;
 
-            //从数据库中读入用户信息
-            Init("127.0.0.1",9090);
+            
 
             userName.Items.Clear();
             Select(sqlUserInfoOrderByName);
@@ -308,43 +299,6 @@ namespace TBM_Client_Windows
                 Delete(sql);
             }
 
-            string sqlDeleteUser = cmdDeleteHistoryDataUser;
-            if (!item.UserName.Equals(""))
-            {
-                sqlDeleteUser += "USERNAME = '";
-                sqlDeleteUser += item.UserName.ToString();
-                sqlDeleteUser += "'";
-                if (!item.UserCount.Equals(""))
-                {
-                    sqlDeleteUser += " and ";
-                    sqlDeleteUser += "USERCOUNT='";
-                    sqlDeleteUser += item.UserCount.ToString();
-                    sqlDeleteUser += "'";
-                }
-                if (!item.UserPhone.Equals(""))
-                {
-                    sqlDeleteUser += " and ";
-                    sqlDeleteUser += " USERPHONE = '";
-                    sqlDeleteUser += item.UserPhone.ToString();
-                    sqlDeleteUser += "'";
-                }
-                if (!item.ShopName.Equals(""))
-                {
-                    sqlDeleteUser += " and ";
-                    sqlDeleteUser += " SHOPNAME = '";
-                    sqlDeleteUser += item.ShopName.ToString();
-                    sqlDeleteUser += "'";
-                }
-                if (!item.DateTime.Equals(""))
-                {
-                    sqlDeleteUser += " and ";
-                    sqlDeleteUser += " DATETIME = '";
-                    sqlDeleteUser += item.DateTime.ToString();
-                    sqlDeleteUser += "'";
-                }
-
-                Delete(sqlDeleteUser);
-            }
             Users.Remove(item);
         }
 
@@ -636,111 +590,6 @@ namespace TBM_Client_Windows
 
             string sql = temp;
             Insert(sql);
-            }
-            //end
-
-            //start
-            string searchForUser = searchHistoryDataUser;
-
-            if (!sUserName.Equals(""))
-            {
-            searchForUser += "where USERNAME='";
-            searchForUser += sUserName;
-            searchForUser += "' ";
-            }
-            if (!sShopName.Equals(""))
-            {
-            searchForUser += "and ";
-            searchForUser += "SHOPNAME='";
-            searchForUser += sShopName;
-            searchForUser += "' ";
-            }
-            if (!sUserCount.Equals(""))
-            {
-            searchForUser += "and ";
-            searchForUser += "USERCOUNT='";
-            searchForUser += sUserCount;
-            searchForUser += "' ";
-            }
-
-            Select2(searchForUser);
-            TuserName.Clear();
-            TuserCount.Clear();
-            TuserPhone.Clear();
-            ShopName.Clear();
-            COSTMONEY.Clear();
-            COSTMONEYForUser.Clear();
-            DateTimeData.Clear();
-
-            GetMsg2(TuserName, TuserCount, TuserPhone, ShopName, COSTMONEY, COSTMONEYForUser, DateTimeData);
-            TempUserName = TuserName.ToString();
-            TempShopName = ShopName.ToString();
-            TempDateTime = DateTimeData.ToString();
-            if (TempUserName.Equals("") && TempShopName.Equals("") && TempDateTime.Equals("") &&
-            !sUserName.Equals("") && !sShopName.Equals(""))
-            {
-            string temp = InsertHistoryDataUser;
-            temp += "('";
-            temp += sUserName;
-            temp += "','";
-            temp += sUserCount;
-            temp += "','";
-            temp += sUserPhone;
-            temp += "','";
-            temp += sShopName;
-            temp += "','";
-            temp += sCostMoney;
-            temp += "','";
-            temp += sCostForUser;
-            temp += "','";
-            temp += sDateTime;            // 2008-9-4 20:02:10;
-            temp += "')";
-
-            Insert(temp);
-            }
-            else
-            {
-
-            DateTime nowDate = Convert.ToDateTime(sDateTime);
-            DateTime lastDate = Convert.ToDateTime(TempDateTime);
-            if (DateTime.Compare(nowDate, lastDate) >= 0)
-            {
-
-
-                string temp = updateHistoryDataUser;
-                temp += "SET ";
-
-                temp += "COSTMONEY = '";
-                temp += sCostMoney;
-                temp += "', ";
-
-                temp += "COSTMONEYFORUSER = '";
-                temp += sCostForUser;
-                temp += "', ";
-
-                temp += "DATETIME = '";
-                temp += sDateTime;
-                temp += "' WHERE ";
-
-                temp += "USERNAME = '";
-                temp += sUserName;
-                temp += "' and ";
-
-                temp += "USERCOUNT = '";
-                temp += sUserCount;
-                temp += "' and ";
-
-                temp += "USERPHONE = '";
-                temp += sUserPhone;
-                temp += "' and ";
-
-                temp += "SHOPNAME = '";
-                temp += sShopName;
-                temp += "' ";
-
-                Delete(temp);
-            }
-            //"SET USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
             }
         }
         public void saveItemData()

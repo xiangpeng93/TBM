@@ -15,6 +15,9 @@ using namespace std;
 string g_userName;
 string g_userPaswd;
 
+string g_ip;
+int g_port = 0;
+
 int g_clntSock;
 
 string assemblyMsg(const char *userName, const char *paswd, const char* cmd, const char *user_cmd, const char *cmd_msg)
@@ -41,10 +44,22 @@ string assemblyMsg(const char *userName, const char *paswd, const char* cmd, con
 */
 int __stdcall Login(char *userName, char *userPaswd)
 {
+	int nRet = 0;
 	g_userName = userName;
 	g_userPaswd = userPaswd;
+
+	SOCKADDR_IN clntAddr;
+	clntAddr.sin_family = PF_INET;
+	clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
+	clntAddr.sin_port = htons(g_port);
+	nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
+	if (nRet != 0)
+	{
+		cout << "last error " << GetLastError() << endl;
+	}
+
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "login", "");
-	int nRet = send(g_clntSock, req.c_str(), req.length(), 0);
+	nRet = send(g_clntSock, req.c_str(), req.length(), 0);
 	if (nRet != -1)
 	{
 		char buffer[1024 * 10] = { 0 };
@@ -53,13 +68,17 @@ int __stdcall Login(char *userName, char *userPaswd)
 		if(nRet > 0){
 			cout << "buffer : " << buffer << endl;
 			cout << "size : " << strlen(buffer) << endl;
+			if (strcmp(buffer, "success") == 0)
+			{
+				return 0;
+			}
 		}
 		else
 		{
 			cout << "nRet : " << nRet << endl;
 		}
 	}
-	return 0;
+	return nRet;
 };
 
 int logout(char *userName, char *userPaswd)
@@ -87,15 +106,8 @@ void __stdcall Init(char* ip,int port)
 
 		return;
 	}
-	SOCKADDR_IN clntAddr;
-	clntAddr.sin_family = PF_INET;
-	clntAddr.sin_addr.s_addr = inet_addr(ip);
-	clntAddr.sin_port = htons(port);
-	nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
-	if (nRet != 0)
-	{
-		cout << "last error " << GetLastError() << endl;
-	}
+	g_ip = ip;
+	g_port = port;
 }
 
 void __stdcall Fini()
@@ -159,14 +171,38 @@ void __stdcall Delete2(char *sql)
 	CommonSql(sql);
 }
 
+/*
+<info>
+<user_name>xp335</user_name>
+<user_pswd>2</user_pswd>
+<cmd>common</cmd>
+<user_cmd>commonsql</user_cmd>
+<cmd_msg>select * from HISTORY_DATA_INFO</cmd_msg>
+</info>
+*/
 void __stdcall CommonSql(char *sql)
 {
-
+	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "commonsql", sql);
+	int nRet = send(g_clntSock, req.c_str(), req.length(), 0);
+	int bufferSize = 1024 * 10 - 1;
+	if (nRet != -1)
+	{
+		char buffer[1024 * 10] = { 0 };
+		nRet = recv(g_clntSock, buffer, bufferSize, 0);
+		if (nRet > 0){
+			cout << "buffer : " << buffer << endl;
+			cout << "size : " << strlen(buffer) << endl;
+		}
+		else
+		{
+			cout << "nRet : " << nRet << endl;
+		}
+	}
 }
 
 void __stdcall GetMsg(char *userName, char *userCount, char *userPhone)
 {
-
+	GetMsg2(userName, userCount, userPhone, NULL, NULL, NULL, NULL);
 }
 
 /*
@@ -194,31 +230,31 @@ void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *s
 
 			CMarkupSTL cXml;
 			cXml.SetDoc(buffer);
-			if (cXml.FindElem("username"))
+			if (cXml.FindElem("username") && userName != NULL)
 			{
 				strcpy(userName, cXml.GetData().c_str()); 
 			}
-			if (cXml.FindElem("usercount"))
+			if (cXml.FindElem("usercount") && userCount != NULL)
 			{
 				strcpy(userCount, cXml.GetData().c_str());
 			}
-			if (cXml.FindElem("userphone"))
+			if (cXml.FindElem("userphone") && userPhone != NULL)
 			{
 				strcpy(userPhone, cXml.GetData().c_str());
 			}
-			if (cXml.FindElem("shopname"))
+			if (cXml.FindElem("shopname") && shopName != NULL)
 			{
 				strcpy(shopName, cXml.GetData().c_str());
 			}
-			if (cXml.FindElem("costmoney"))
+			if (cXml.FindElem("costmoney") && costMoney != NULL)
 			{
 				strcpy(costMoney, cXml.GetData().c_str());
 			}
-			if (cXml.FindElem("costmoneyforuser"))
+			if (cXml.FindElem("costmoneyforuser") && costMoneyForUser != NULL)
 			{
 				strcpy(costMoneyForUser, cXml.GetData().c_str());
 			}
-			if (cXml.FindElem("datetime"))
+			if (cXml.FindElem("datetime") && dataTime != NULL)
 			{
 				strcpy(dataTime, cXml.GetData().c_str());
 			}

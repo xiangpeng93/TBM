@@ -16,17 +16,17 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TBM_Client_Windows;
 
-namespace 刷单管理
+namespace TBM_Client_Windows
 {
     /// <summary>
     /// AddUser.xaml 的交互逻辑
     /// </summary>
     public partial class AddUser : MetroWindow
     {
-        string cmdInsert = "INSERT INTO USERINFO (USERNAME , USERCOUNT , USERPHONE ) VALUES ";
-        string cmdInsertShop = "INSERT INTO SHOPINFO (USERNAME , USERCOUNT , USERPHONE ) VALUES ";
-        string cmdDelete = "delete from USERINFO where ";
-        string cmdDeleteShop = "delete from SHOPINFO where ";
+        string cmdInsert = "INSERT INTO USER_DATA_INFO (USERNAME , USERCOUNT , USERPHONE ) VALUES ";
+        string cmdInsertShop = "INSERT INTO SHOP_DATA_INFO (USERNAME , USERCOUNT , USERPHONE ) VALUES ";
+        string cmdDelete = "delete from USER_DATA_INFO where ";
+        string cmdDeleteShop = "delete from SHOP_DATA_INFO where ";
 
 
         [DllImport("TBMClient.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
@@ -296,7 +296,7 @@ namespace 刷单管理
 		}
 		private void InsertIfNotExit(string name,string count,string phone,string shop)
 		{
-            string insertToHistoryData = "INSERT INTO HISTORYDATA (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
+            string insertToHistoryData = "INSERT INTO HISTORY_DATA_INFO (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
             insertToHistoryData += "('";
             insertToHistoryData += name;
             insertToHistoryData += "','";
@@ -317,7 +317,7 @@ namespace 刷单管理
 
             return;
 
-			string selectSql = "select * from HISTORYDATA where USERNAME='";
+			string selectSql = "select * from HISTORY_DATA_INFO where USERNAME='";
 			selectSql+= name;
 			selectSql+= "' and ";
 			selectSql+= "SHOPNAME='";
@@ -394,7 +394,7 @@ namespace 刷单管理
 			}
 			while (Name.Equals("") == false);
 
-            Delete("DELETE from HISTORYDATA where DATETIME='0001-01-01 00:00:00Z'");
+            Delete("DELETE from HISTORY_DATA_INFO where DATETIME='0001-01-01 00:00:00Z'");
 
 			foreach (var useritem in m_userList)
 			{

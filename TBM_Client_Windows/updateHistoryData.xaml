@@ -1,9 +1,8 @@
-﻿<controls:MetroWindow x:Class="刷单管理.updateHistoryData"
+﻿<controls:MetroWindow x:Class="TBM_Client_Windows.updateHistoryData"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                      
-        Title="修改窗口" Height="144" Width="1128" ResizeMode="CanMinimize" Closed="MetroWindow_Closed">
+        Title="修改窗口" Height="144" Width="1128" ResizeMode="CanMinimize" Closed="MetroWindow_Closed" WindowStartupLocation="CenterScreen">
     <Grid>
         <DockPanel Margin="2" HorizontalAlignment="Left">
             <TextBlock Text="名称：" Margin="5" VerticalAlignment="Center"></TextBlock>

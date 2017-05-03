@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,6 +21,11 @@ namespace TBM_Client_Windows
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		[DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+		public static extern void Init(string ip, int port);
+
+		[DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+		public static extern int Login(string userName, string paswd);
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -55,11 +61,22 @@ namespace TBM_Client_Windows
 			}
 			else
 			{
-				MessageBox.Show(textBox_user.Text.ToString());
-				MessageBox.Show(passwdBox_passwd.Password.ToString());
+				//从数据库中读入用户信息
+				Init("127.0.0.1", 9090);
+				if (0 == Login(textBox_user.Text.ToString(), passwdBox_passwd.Password.ToString()))
+				{
+					ManalWindow manal = new ManalWindow();
+					manal.Show();
+					this.Close();
+				}
+				else
+				{
+					text_user_paswd_msg.Text = "登录失败，用户名或密码错误.";
+				}
+				//MessageBox.Show(textBox_user.Text.ToString());
+				//MessageBox.Show(passwdBox_passwd.Password.ToString());
 			}
-            ManalWindow manal = new ManalWindow();
-            manal.Show();
+
 		}
 
 		private void img_min_btn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

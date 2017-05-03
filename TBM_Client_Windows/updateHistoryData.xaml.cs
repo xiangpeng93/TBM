@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TBM_Client_Windows;
 
-namespace 刷单管理
+namespace TBM_Client_Windows
 {
 	/// <summary>
 	/// updateHistoryData.xaml 的交互逻辑
@@ -33,9 +33,8 @@ namespace 刷单管理
 		string tCostMoney;
 		string tDatetime;
         int tTableType;
-		string updateHistoryDataUser = "UPDATE USERDATAHISTORY ";
 
-		string HistoryDataTable = "UPDATE HISTORYDATA ";
+		string HistoryDataTable = "UPDATE HISTORY_DATA_INFO ";
         ManalWindow g_mangerMoney;
         public updateHistoryData(ManalWindow mangerMoney)
 		{
@@ -46,72 +45,7 @@ namespace 刷单管理
 
 		private void updateHistoryData_Click(object sender, RoutedEventArgs e)
 		{
-
             string temp;
-
-            if(tTableType == 1)
-            {
-                temp = updateHistoryDataUser;
-                temp += "SET ";
-
-                temp += "USERNAME = '";
-                temp += username.Text;
-                temp += "' , ";
-
-                temp += "USERCOUNT = '";
-                temp += usercount.Text;
-                temp += "' , ";
-
-                temp += "USERPHONE = '";
-                temp += userphone.Text;
-                temp += "' , ";
-
-                temp += "SHOPNAME = '";
-                temp += shopName.Text;
-                temp += "' , ";
-
-                temp += "COSTMONEY = '";
-                temp += usermoney.Text;
-                temp += "', ";
-
-                temp += "COSTMONEYFORUSER = '";
-                temp += usercostMoney.Text;
-                temp += "', ";
-
-                temp += "DATETIME = '";
-                temp += usertime.Text;
-
-                temp += "' WHERE ";
-
-                temp += "USERNAME = '";
-                temp += tUserName;
-                temp += "' and ";
-
-                temp += "USERCOUNT = '";
-                temp += tUserCount;
-                temp += "' and ";
-
-                temp += "USERPHONE = '";
-                temp += tUserPhone;
-                temp += "' and ";
-
-                temp += "SHOPNAME = '";
-                temp += tShopName;
-                temp += "' and ";
-
-                temp += "COSTMONEY = '";
-                temp += tMoney;
-                temp += "' and ";
-
-                temp += "COSTMONEYFORUSER = '";
-                temp += tCostMoney;
-                temp += "' and ";
-
-                temp += "DATETIME = '";
-                temp += tDatetime;
-                temp += "' ";
-                Delete(temp);
-            }
 
             temp = HistoryDataTable;
 			temp += "SET ";
