@@ -214,7 +214,7 @@ void __stdcall GetMsg(char *userName, char *userCount, char *userPhone)
 <user_cmd>getmsg</user_cmd>
 </info>
 */
-
+string GetMsgRspBuffer;
 void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *shopName, char *costMoney, char *costMoneyForUser, char * dataTime)
 {
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "getmsg", "");
@@ -225,12 +225,14 @@ void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *s
 	{
 		char buffer[1024 * 10] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
-		if (nRet > 0){
-			cout << "buffer : " << buffer << endl;
-			cout << "size : " << strlen(buffer) << endl;
+		GetMsgRspBuffer += buffer;
+		if (nRet > 0 && GetMsgRspBuffer.find("<info>") != -1 && GetMsgRspBuffer.find("</info>") != -1){
+			cout << "buffer : " << GetMsgRspBuffer << endl;
+			cout << "size : " << strlen(GetMsgRspBuffer.c_str()) << endl;
 
 			CMarkupSTL cXml;
-			cXml.SetDoc(buffer);
+			cXml.SetDoc(GetMsgRspBuffer.c_str());
+			GetMsgRspBuffer = "";
 			if (cXml.FindElem("username") && userName != NULL)
 			{
 				strcpy(userName, cXml.GetData().c_str()); 

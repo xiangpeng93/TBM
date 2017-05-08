@@ -489,7 +489,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 	send(clnt_sock, "failed", strlen("failed"), 0);
 	return "failed";
 }
-
+map<int, string> g_mapRecvMsg;
 void ProcessMsg()
 {
 	fd_set freads, temps;
@@ -526,7 +526,7 @@ void ProcessMsg()
 					{
 						fd_max = clnt_sock;
 					}
-
+					g_mapRecvMsg[clnt_sock] = "";
 					string ipAddr = inet_ntoa(clntAddr.sin_addr);
 					cout << "new client . Ip : " << ipAddr.c_str() << " Port : " << htons(clntAddr.sin_port) << endl;			
 				}
@@ -534,6 +534,7 @@ void ProcessMsg()
 				{
 					char buffer[1024*100] = { 0 };
 					int str_len = recv(i, buffer, 100*1024 - 1, 0);
+					
 					if (str_len <= 0)//disconnect
 					{
 						FD_CLR(i, &freads);
@@ -541,29 +542,34 @@ void ProcessMsg()
 						{
 							UserConnectManger::GetInstance()->DeleteUserConnectById(i);
 						}
-
+						g_mapRecvMsg.erase(g_mapRecvMsg.find(i));
 						closesocket(i);
 						cout << "disconnect client " << i << endl;
 					}
 					else if (str_len > 0)
 					{
-						cout << "recv msg : " << buffer << endl;
-						CMarkupSTL cXml;
-						cXml.SetDoc(buffer);
-						if (cXml.FindElem("info", true))
+						g_mapRecvMsg[i] += buffer;
+						if (g_mapRecvMsg[i].find("<info>") != -1 && g_mapRecvMsg[i].find("</info>") != -1)
 						{
-							cXml.IntoElem();
-							if (cXml.FindElem("cmd", true))
+							cout << "recv msg : " << g_mapRecvMsg[i].c_str() << endl;
+							CMarkupSTL cXml;
+							cXml.SetDoc(g_mapRecvMsg[i].c_str());
+							if (cXml.FindElem("info", true))
 							{
-								if (cXml.GetData() == "select")
+								cXml.IntoElem();
+								if (cXml.FindElem("cmd", true))
 								{
-									cout << ProcessSelect(i, buffer).c_str();
-								}
-								else if (cXml.GetData() == "common")
-								{
-									cout << ProcessCommonCmd(i,buffer).c_str();
+									if (cXml.GetData() == "select")
+									{
+										cout << ProcessSelect(i, g_mapRecvMsg[i].c_str()).c_str();
+									}
+									else if (cXml.GetData() == "common")
+									{
+										cout << ProcessCommonCmd(i, g_mapRecvMsg[i].c_str()).c_str();
+									}
 								}
 							}
+							g_mapRecvMsg[i] = "";
 						}
 						//send(i, buffer, str_len, 0);
 					}
