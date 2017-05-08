@@ -1,4 +1,4 @@
-// TBMServer.cpp : ∂®“Â DLL ”¶”√≥Ã–Úµƒµº≥ˆ∫Ø ˝°£
+// TBMServer.cpp : ÂÆö‰πâ DLL Â∫îÁî®Á®ãÂ∫èÁöÑÂØºÂá∫ÂáΩÊï∞„ÄÇ
 //
 
 #include "stdafx.h"
@@ -33,7 +33,7 @@ using namespace std;
 #define INSERT_USER_INO "INSERT INTO USER_INFO(USERNAME,PASSWD,DB_PATH) VALUES('%s','%s','%s');"
 #define DELETE_USER_INO "DELETE FROM USER_INFO WHERE USERNAME='%s' and PASSWD='%s';"
 
-//◊¢≤·”√ªß£¨ÃÌº” π”√
+//Ê≥®ÂÜåÁî®Êà∑ÔºåÊ∑ªÂä†‰ΩøÁî®
 #define CREATE_COMMON_DB_TABLE "CREATE TABLE IF NOT EXISTS USERINFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT)"
 #define CREATE_SHOP_INFO_TABLE "CREATE TABLE IF NOT EXISTS SHOPINFO  (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT)"
 #define CREATE_HISTROY_DATA_TABLE "CREATE TABLE IF NOT EXISTS HISTORYDATA  (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT,SHOPNAME TEXT,COSTMONEY TEXT,COSTMONEYFORUSER TEXT,DATETIME datetime)"
@@ -202,7 +202,7 @@ public:
 			m_list_callBack_info.push_back(tempInfo);
 			cout << m_list_callBack_info.size() << endl;
 		}
-		sqlite3_free_table(pResult);  // π”√ÕÍ∫ÛŒÒ±ÿ Õ∑≈Œ™º«¬º∑÷≈‰µƒƒ⁄¥Ê£¨∑Ò‘Úª·ƒ⁄¥Ê–π¬©
+		sqlite3_free_table(pResult);  //‰ΩøÁî®ÂÆåÂêéÂä°ÂøÖÈáäÊîæ‰∏∫ËÆ∞ÂΩïÂàÜÈÖçÁöÑÂÜÖÂ≠òÔºåÂê¶Âàô‰ºöÂÜÖÂ≠òÊ≥ÑÊºè
 		close_db(db);
 		return 0;
 	};
@@ -489,7 +489,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 	send(clnt_sock, "failed", strlen("failed"), 0);
 	return "failed";
 }
-
+map<int, string> g_mapRecvMsg;
 void ProcessMsg()
 {
 	fd_set freads, temps;
@@ -526,7 +526,7 @@ void ProcessMsg()
 					{
 						fd_max = clnt_sock;
 					}
-
+					g_mapRecvMsg[clnt_sock] = "";
 					string ipAddr = inet_ntoa(clntAddr.sin_addr);
 					cout << "new client . Ip : " << ipAddr.c_str() << " Port : " << htons(clntAddr.sin_port) << endl;			
 				}
@@ -534,6 +534,7 @@ void ProcessMsg()
 				{
 					char buffer[1024*100] = { 0 };
 					int str_len = recv(i, buffer, 100*1024 - 1, 0);
+					
 					if (str_len <= 0)//disconnect
 					{
 						FD_CLR(i, &freads);
@@ -541,29 +542,34 @@ void ProcessMsg()
 						{
 							UserConnectManger::GetInstance()->DeleteUserConnectById(i);
 						}
-
+						g_mapRecvMsg.erase(g_mapRecvMsg.find(i));
 						closesocket(i);
 						cout << "disconnect client " << i << endl;
 					}
 					else if (str_len > 0)
 					{
-						cout << "recv msg : " << buffer << endl;
-						CMarkupSTL cXml;
-						cXml.SetDoc(buffer);
-						if (cXml.FindElem("info", true))
+						g_mapRecvMsg[i] += buffer;
+						if (g_mapRecvMsg[i].find("<info>") != -1 && g_mapRecvMsg[i].find("</info>") != -1)
 						{
-							cXml.IntoElem();
-							if (cXml.FindElem("cmd", true))
+							cout << "recv msg : " << g_mapRecvMsg[i].c_str() << endl;
+							CMarkupSTL cXml;
+							cXml.SetDoc(g_mapRecvMsg[i].c_str());
+							if (cXml.FindElem("info", true))
 							{
-								if (cXml.GetData() == "select")
+								cXml.IntoElem();
+								if (cXml.FindElem("cmd", true))
 								{
-									cout << ProcessSelect(i, buffer).c_str();
-								}
-								else if (cXml.GetData() == "common")
-								{
-									cout << ProcessCommonCmd(i,buffer).c_str();
+									if (cXml.GetData() == "select")
+									{
+										cout << ProcessSelect(i, g_mapRecvMsg[i].c_str()).c_str();
+									}
+									else if (cXml.GetData() == "common")
+									{
+										cout << ProcessCommonCmd(i, g_mapRecvMsg[i].c_str()).c_str();
+									}
 								}
 							}
+							g_mapRecvMsg[i] = "";
 						}
 						//send(i, buffer, str_len, 0);
 					}
@@ -620,7 +626,7 @@ int __stdcall start_tbmServer(int port)
 	g_processThread = new thread(ProcessMsg);
 	g_processThread->detach();
 
-	//ªÒ»°“ª¥Œ–≈œ¢
+	//Ëé∑Âèñ‰∏ÄÊ¨°‰ø°ÊÅØ
 	get_all_user_info();
 	return nRet;
 }
@@ -753,7 +759,7 @@ int get_all_user_info()
 		g_user_info_map[tempStruct.name] = tempStruct;
 		cout << endl;
 	}
-	sqlite3_free_table(pResult);  // π”√ÕÍ∫ÛŒÒ±ÿ Õ∑≈Œ™º«¬º∑÷≈‰µƒƒ⁄¥Ê£¨∑Ò‘Úª·ƒ⁄¥Ê–π¬©
+	sqlite3_free_table(pResult);  //‰ΩøÁî®ÂÆåÂêéÂä°ÂøÖÈáäÊîæ‰∏∫ËÆ∞ÂΩïÂàÜÈÖçÁöÑÂÜÖÂ≠òÔºåÂê¶Âàô‰ºöÂÜÖÂ≠òÊ≥ÑÊºè
 	return 0;
 }
 
@@ -783,7 +789,7 @@ int DoRegister(string name,string pswd)
 		}
 		cout << "register success . " << name.c_str() << " " << pswd.c_str();
 	}
-	//∏¸–¬–≈œ¢
+	//Êõ¥Êñ∞‰ø°ÊÅØ
 	get_all_user_info();
 	return 0;
 }
