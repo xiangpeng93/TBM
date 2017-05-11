@@ -1,9 +1,9 @@
-// TBMServerTest.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// TBMServerTest.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include "stdafx.h"
 #include"../TBMServer/TBMServer.h"
-#pragma comment (lib,"../debug/TBMServer")
+#pragma comment (lib,"../release/TBMServer")
 #include <iostream>
 using namespace std;
 #include <Windows.h>
