@@ -130,7 +130,7 @@ public:
 		int nRet = sqlite3_exec(db, sql.c_str(), NULL, NULL, &g_errMsg);
 		if (nRet != SQLITE_OK)
 		{
-			//cout << g_errMsg << endl;
+			cout << g_errMsg << endl;
 			sqlite3_free(g_errMsg);
 		}
 		close_db(db);
@@ -171,7 +171,9 @@ public:
 				strcpy_s(dataTime, iter->DATETIME.length() + 1, iter->DATETIME.c_str());
 			
 			m_list_callBack_info.erase(iter);
-			//cout << m_list_callBack_info.size() << endl;
+#ifdef DEBUG
+			cout << m_list_callBack_info.size() << endl;
+#endif
 		}
 		else
 		{
@@ -251,14 +253,20 @@ void ProcessSelect(void * uscn, string name, string pswd, string sql)
 			}
 			strOut += " ";
 
-			++nIndex;
-			//cout << strOut.c_str();
-		}
-		//cout << endl;
 
+			++nIndex;
+#ifdef DEBUG
+			cout << strOut.c_str();
+#endif
+		}
+#ifdef DEBUG
+		cout << endl;
+#endif
 		AutoLock autoLock(&usercnt->m_user_connect_mutex);
 		usercnt->m_list_callBack_info.push_back(tempInfo);
-		//cout << usercnt->m_list_callBack_info.size() << endl;
+#ifdef DEBUG
+		cout << usercnt->m_list_callBack_info.size() << endl;
+#endif
 	}
 	sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
 	close_db(db);
@@ -283,7 +291,7 @@ public:
 			m_mapUserConnect[id] = usc;
 			return 0;
 		}
-		//cout << "id is exist!" << id<< endl;
+		cout << "id is exist!" << id<< endl;
 		return -1;
 	};
 
@@ -297,7 +305,7 @@ public:
 			m_mapUserConnect.erase(m_mapUserConnect.find(id));
 			return 0;
 		}
-		//cout << "id not exist! "<<id << endl;
+		cout << "id not exist! "<<id << endl;
 		return -1;
 	};
 
@@ -316,7 +324,7 @@ public:
 				return 0;
 			}
 		}
-		//cout << "name not exist! "<<name.c_str() << endl;
+		cout << "name not exist! "<<name.c_str() << endl;
 		return -1;
 	};
 
@@ -326,7 +334,7 @@ public:
 		{
 			return m_mapUserConnect[id];
 		}
-		//cout << "id not exist! " << id << endl;
+		cout << "id not exist! " << id << endl;
 		return NULL;
 	};
 
@@ -341,7 +349,7 @@ public:
 				return iter->second;
 			}
 		}
-		//cout << "name not exist! " << name.c_str() << endl;
+		cout << "name not exist! " << name.c_str() << endl;
 		return NULL;
 	};
 	
@@ -370,7 +378,10 @@ bool isFindInUserInfoMap(string user_name, string user_pswd)
 
 string ProcessSelect(int clnt_sock, const char *buffer)
 {
-	//cout << "ProcessSelect " << endl;
+#ifdef DEBUG
+
+	cout << "ProcessSelect " << endl;
+#endif
 	CMarkupSTL cXml;
 	cXml.SetDoc(buffer);
 
@@ -415,6 +426,8 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 					char tempInfo[7][1024] = { 0 };
 					temp->GetMsg(tempInfo[0], tempInfo[1], tempInfo[2], tempInfo[3], tempInfo[4], tempInfo[5], tempInfo[6]);
 					CMarkupSTL cXmlRsp;
+					cXmlRsp.AddElem("info");
+					cXmlRsp.IntoElem();
 					cXmlRsp.AddElem("username", tempInfo[0]);
 					cXmlRsp.AddElem("usercount", tempInfo[1]);
 					cXmlRsp.AddElem("userphone", tempInfo[2]);
@@ -435,7 +448,10 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 
 string ProcessCommonCmd(int clnt_sock, const char *buffer)
 {
-	//cout << "ProcessCommonCmd " << endl;
+#ifdef DEBUG
+
+	cout << "ProcessCommonCmd " << endl;
+#endif
 	CMarkupSTL cXml;
 	cXml.SetDoc(buffer);
 
@@ -532,7 +548,7 @@ void ProcessMsg()
 		temps = freads;
 		if ((fd_num = select(fd_max + 1, &temps, 0, 0, &timeout)) == -1)
 		{
-			//cout << "select error -1" << endl;
+			cout << "select error -1" << endl;
 			break;
 		}
 		if (fd_num == 0)
@@ -553,7 +569,7 @@ void ProcessMsg()
 					}
 					g_mapRecvMsg[clnt_sock] = "";
 					string ipAddr = inet_ntoa(clntAddr.sin_addr);
-					//cout << "new client . Ip : " << ipAddr.c_str() << " Port : " << htons(clntAddr.sin_port) << endl;			
+					cout << "new client . Ip : " << ipAddr.c_str() << " Port : " << htons(clntAddr.sin_port) << endl;			
 				}
 				else
 				{
@@ -570,14 +586,17 @@ void ProcessMsg()
 						}
 						g_mapRecvMsg.erase(g_mapRecvMsg.find(i));
 						closesocket(i);
-						//cout << "disconnect client " << i << endl;
+						cout << "disconnect client " << i << endl;
 					}
 					else if (str_len > 0)
 					{
 						g_mapRecvMsg[i] += buffer;
 						if (g_mapRecvMsg[i].find("<info>") != -1 && g_mapRecvMsg[i].find("</info>") != -1)
 						{
-							//cout << "recv msg : " << g_mapRecvMsg[i].c_str() << endl;
+#ifdef DEBUG
+
+							cout << "recv msg : " << g_mapRecvMsg[i].c_str() << endl;
+#endif
 							CMarkupSTL cXml;
 							cXml.SetDoc(g_mapRecvMsg[i].c_str());
 							if (cXml.FindElem("info", true))
@@ -614,7 +633,7 @@ int __stdcall init_tbmServer()
 	nRet = WSAStartup(MAKEWORD(2, 2), &wsData);
 	if (nRet != 0)
 	{
-		//cout << "last error " << GetLastError() << endl;
+		cout << "last error " << GetLastError() << endl;
 	}
 	init_db();
 	return nRet;
@@ -626,7 +645,7 @@ int __stdcall start_tbmServer(int port)
 	g_serverSock = socket(PF_INET, SOCK_STREAM, 0);
 	if (g_serverSock == INVALID_SOCKET)
 	{
-		//cout << "invalid socket" << endl;
+		cout << "invalid socket" << endl;
 		nRet = INVALID_SOCKET;
 
 		return nRet;
@@ -638,14 +657,14 @@ int __stdcall start_tbmServer(int port)
 
 	if (SOCKET_ERROR == ::bind(g_serverSock, (const sockaddr*)&serverAddr, sizeof(SOCKADDR_IN)))
 	{
-		//cout << "bind SockError" << endl;
+		cout << "bind SockError" << endl;
 		nRet = SOCKET_ERROR;
 
 		return nRet;
 	}
 	if (SOCKET_ERROR == listen(g_serverSock, MAX_CONNECT))
 	{
-		//cout << "listen SockError" << endl;
+		cout << "listen SockError" << endl;
 		nRet = SOCKET_ERROR;
 
 		return nRet;
@@ -665,7 +684,7 @@ int __stdcall fini_tbmServer()
 	nRet = WSACleanup();
 	if (nRet != 0)
 	{
-		//cout << "last error " << GetLastError() << endl;
+		cout << "last error " << GetLastError() << endl;
 	}
 	sqlite3_close(g_db);
 
@@ -726,7 +745,7 @@ int get_all_user_info()
 	int nResult = sqlite3_get_table(g_db, "select * from USER_INFO;", &pResult, &nRow, &nCol, &g_errMsg);
 	if (nResult != SQLITE_OK)
 	{
-		//cout << g_errMsg << endl;
+		cout << g_errMsg << endl;
 		sqlite3_free(g_errMsg);
 		return -1;
 	}
@@ -781,10 +800,10 @@ int get_all_user_info()
 			}
 
 			++nIndex;
-			//cout << strOut.c_str();
+			cout << strOut.c_str();
 		}
 		g_user_info_map[tempStruct.name] = tempStruct;
-		//cout << endl;
+		cout << endl;
 	}
 	sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
 	return 0;
@@ -796,12 +815,12 @@ int DoRegister(string name,string pswd)
 	int nResult = 0;
 	if (name.empty())
 	{
-		//cout << "name is empty." << endl;
+		cout << "name is empty." << endl;
 		return -100;
 	}
 	if (g_user_info_map.find(name) != g_user_info_map.end())
 	{
-		//cout << "this user was register!" << endl;
+		cout << "this user was register!" << endl;
 		return -1;
 	}
 	else
@@ -811,11 +830,11 @@ int DoRegister(string name,string pswd)
 		nResult = sqlite3_exec(g_db, cmd, NULL, NULL, &g_errMsg);
 		if (nResult != SQLITE_OK)
 		{
-			//cout << g_errMsg << endl;
+			cout << g_errMsg << endl;
 			sqlite3_free(g_errMsg);
 			return -1;
 		}
-		//cout << "register success . " << name.c_str() << " " << pswd.c_str();
+		cout << "register success . " << name.c_str() << " " << pswd.c_str();
 	}
 	//更新信息
 	get_all_user_info();
