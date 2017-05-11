@@ -68,8 +68,6 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 		int bufferSize = 1024 * 10 - 1;
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if(nRet > 0){
-			cout << "buffer : " << buffer << endl;
-			cout << "size : " << strlen(buffer) << endl;
 			if (strcmp(buffer, "success") == 0)
 			{
 				return 0;
@@ -146,8 +144,10 @@ void  __stdcall Select(char *sql)
 		char buffer[1024 * 10] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
+#ifdef DEBUG
 			cout << "buffer : " << buffer << endl;
 			cout << "size : " << strlen(buffer) << endl;
+#endif
 		}
 		else
 		{
@@ -191,8 +191,11 @@ void __stdcall CommonSql(char *sql)
 		char buffer[1024 * 10] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
+#ifdef DEBUG
+
 			cout << "buffer : " << buffer << endl;
 			cout << "size : " << strlen(buffer) << endl;
+#endif
 		}
 		else
 		{
@@ -223,48 +226,50 @@ void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *s
 	int bufferSize = 1024 * 10 - 1;
 	if (nRet != -1)
 	{
-		char buffer[1024 * 10] = { 0 };
-		nRet = recv(g_clntSock, buffer, bufferSize, 0);
-		GetMsgRspBuffer += buffer;
-		if (nRet > 0 && GetMsgRspBuffer.find("<info>") != -1 && GetMsgRspBuffer.find("</info>") != -1){
+		do{
+			char buffer[1024 * 10] = { 0 };
+			nRet = recv(g_clntSock, buffer, bufferSize, 0);
+			GetMsgRspBuffer += buffer;
+#ifdef DEBUG
+
 			cout << "buffer : " << GetMsgRspBuffer << endl;
 			cout << "size : " << strlen(GetMsgRspBuffer.c_str()) << endl;
+#endif
+		} while (GetMsgRspBuffer.find("<info>") == -1 || GetMsgRspBuffer.find("</info>") == -1);
+		
 
-			CMarkupSTL cXml;
-			cXml.SetDoc(GetMsgRspBuffer.c_str());
-			GetMsgRspBuffer = "";
-			if (cXml.FindElem("username") && userName != NULL)
-			{
-				strcpy(userName, cXml.GetData().c_str()); 
-			}
-			if (cXml.FindElem("usercount") && userCount != NULL)
-			{
-				strcpy(userCount, cXml.GetData().c_str());
-			}
-			if (cXml.FindElem("userphone") && userPhone != NULL)
-			{
-				strcpy(userPhone, cXml.GetData().c_str());
-			}
-			if (cXml.FindElem("shopname") && shopName != NULL)
-			{
-				strcpy(shopName, cXml.GetData().c_str());
-			}
-			if (cXml.FindElem("costmoney") && costMoney != NULL)
-			{
-				strcpy(costMoney, cXml.GetData().c_str());
-			}
-			if (cXml.FindElem("costmoneyforuser") && costMoneyForUser != NULL)
-			{
-				strcpy(costMoneyForUser, cXml.GetData().c_str());
-			}
-			if (cXml.FindElem("datetime") && dataTime != NULL)
-			{
-				strcpy(dataTime, cXml.GetData().c_str());
-			}
-		}
-		else
+		CMarkupSTL cXml;
+		cXml.SetDoc(GetMsgRspBuffer.c_str());
+		GetMsgRspBuffer = "";
+		cXml.FindElem("info");
+		cXml.IntoElem();
+		if (cXml.FindElem("username") && userName != NULL)
 		{
-			cout << "nRet : " << nRet << endl;
+			strcpy(userName, cXml.GetData().c_str());
+		}
+		if (cXml.FindElem("usercount") && userCount != NULL)
+		{
+			strcpy(userCount, cXml.GetData().c_str());
+		}
+		if (cXml.FindElem("userphone") && userPhone != NULL)
+		{
+			strcpy(userPhone, cXml.GetData().c_str());
+		}
+		if (cXml.FindElem("shopname") && shopName != NULL)
+		{
+			strcpy(shopName, cXml.GetData().c_str());
+		}
+		if (cXml.FindElem("costmoney") && costMoney != NULL)
+		{
+			strcpy(costMoney, cXml.GetData().c_str());
+		}
+		if (cXml.FindElem("costmoneyforuser") && costMoneyForUser != NULL)
+		{
+			strcpy(costMoneyForUser, cXml.GetData().c_str());
+		}
+		if (cXml.FindElem("datetime") && dataTime != NULL)
+		{
+			strcpy(dataTime, cXml.GetData().c_str());
 		}
 	}
 }
