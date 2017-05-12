@@ -1,4 +1,4 @@
-﻿// TBMServer.cpp : 定义 DLL 应用程序的导出函数。
+﻿// TBMServer.cpp : ���� DLL Ӧ�ó���ĵ���������
 //
 
 #include "stdafx.h"
@@ -33,7 +33,7 @@ using namespace std;
 #define INSERT_USER_INO "INSERT INTO USER_INFO(USERNAME,PASSWD,DB_PATH) VALUES('%s','%s','%s');"
 #define DELETE_USER_INO "DELETE FROM USER_INFO WHERE USERNAME='%s' and PASSWD='%s';"
 
-//注册用户，添加使用
+//ע���û������ʹ��
 #define CREATE_COMMON_DB_TABLE "CREATE TABLE IF NOT EXISTS USERINFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT)"
 #define CREATE_SHOP_INFO_TABLE "CREATE TABLE IF NOT EXISTS SHOPINFO  (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT)"
 #define CREATE_HISTROY_DATA_TABLE "CREATE TABLE IF NOT EXISTS HISTORYDATA  (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT,SHOPNAME TEXT,COSTMONEY TEXT,COSTMONEYFORUSER TEXT,DATETIME datetime)"
@@ -82,7 +82,7 @@ bool isFindInUserInfoMap(string user_name, string user_pswd);
 int DoRegister(string name, string pswd);
 int DoCommonSql(string name, string pswd, string sql);
 int get_all_user_info();
-void ProcessSelectThread(void * uscn, string name, string pswd, string sql);
+void ProcessSelect(void * uscn, string name, string pswd, string sql);
 
 mutex g_mutex;
 class UserConnect;
@@ -140,7 +140,7 @@ public:
 
 	int DoSelectSql(string name, string pswd, string sql)
 	{
-		thread tmpProcessSelect(ProcessSelectThread, this, name, pswd, sql);
+		thread tmpProcessSelect(ProcessSelect, this, name, pswd, sql);
 		tmpProcessSelect.detach();
 		return 0;
 	};
@@ -192,7 +192,7 @@ public:
 };
 
 
-void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
+void ProcessSelect(void * uscn, string name, string pswd, string sql)
 {
 	UserConnect *usercnt = (UserConnect *)uscn;
 	if (isFindInUserInfoMap(name, pswd) == false)
@@ -268,7 +268,7 @@ void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
 		cout << usercnt->m_list_callBack_info.size() << endl;
 #endif
 	}
-	sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
+	sqlite3_free_table(pResult);  //ʹ���������ͷ�Ϊ��¼������ڴ棬������ڴ�й©
 	close_db(db);
 	usercnt->m_isSelectSuccess = true;
 }
@@ -446,6 +446,23 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 	return "failed";
 }
 
+time_t StringToDatetime(const char *str)
+{
+	tm tm_; 
+	int year, month, day, hour, minute,second; 
+	sscanf(str,"%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second); 
+	tm_.tm_year = year - 1900;
+	tm_.tm_mon = month - 1;
+	tm_.tm_mday = day;
+	tm_.tm_hour = hour;
+	tm_.tm_min = minute;
+	tm_.tm_sec = second;
+	tm_.tm_isdst = 0;
+
+	time_t t_ = mktime(&tm_); //�Ѿ�����8��ʱ�� 
+	return t_; //��ʱ�� 
+}
+
 string ProcessCommonCmd(int clnt_sock, const char *buffer)
 {
 #ifdef DEBUG
@@ -480,6 +497,12 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 				{
 					if (isFindInUserInfoMap(user_name, user_pswd))
 					{
+						time_t t = time(NULL);
+						if (StringToDatetime(g_user_info_map[user_name].recv.c_str()) < t)
+						{
+							send(clnt_sock, "timeout", strlen("timeout"), 0);
+							return "timeout";
+						}
 						if (-1 == UserConnectManger::GetInstance()->AddUserConnect(clnt_sock, user_name))
 						{
 							send(clnt_sock, "this user is login.", strlen("this user is login."), 0);
@@ -673,7 +696,7 @@ int __stdcall start_tbmServer(int port)
 	g_processThread = new thread(ProcessMsg);
 	g_processThread->detach();
 
-	//获取一次信息
+	//��ȡһ����Ϣ
 	get_all_user_info();
 	return nRet;
 }
@@ -805,12 +828,14 @@ int get_all_user_info()
 		g_user_info_map[tempStruct.name] = tempStruct;
 		cout << endl;
 	}
-	sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
+	sqlite3_free_table(pResult);  //ʹ���������ͷ�Ϊ��¼������ڴ棬������ڴ�й©
 	return 0;
 }
 
 int DoRegister(string name,string pswd)
 {
+	//������Ϣ
+	get_all_user_info();
 	AutoLock autoLock(&g_mutex);
 	int nResult = 0;
 	if (name.empty())
@@ -836,7 +861,7 @@ int DoRegister(string name,string pswd)
 		}
 		cout << "register success . " << name.c_str() << " " << pswd.c_str();
 	}
-	//更新信息
+	//������Ϣ
 	get_all_user_info();
 	return 0;
 }

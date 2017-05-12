@@ -48,6 +48,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>cloud.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="IronPython, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -205,6 +208,7 @@
     <Resource Include="min.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="cloud.ico" />
     <Content Include="saveData.py" />
   </ItemGroup>
   <ItemGroup>
