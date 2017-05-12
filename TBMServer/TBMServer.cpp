@@ -1,4 +1,4 @@
-// TBMServer.cpp : 定义 DLL 应用程序的导出函数。
+﻿// TBMServer.cpp : 定义 DLL 应用程序的导出函数。
 //
 
 #include "stdafx.h"
@@ -82,7 +82,7 @@ bool isFindInUserInfoMap(string user_name, string user_pswd);
 int DoRegister(string name, string pswd);
 int DoCommonSql(string name, string pswd, string sql);
 int get_all_user_info();
-void ProcessSelect(void * uscn, string name, string pswd, string sql);
+void ProcessSelectThread(void * uscn, string name, string pswd, string sql);
 
 mutex g_mutex;
 class UserConnect;
@@ -140,7 +140,7 @@ public:
 
 	int DoSelectSql(string name, string pswd, string sql)
 	{
-		thread tmpProcessSelect(ProcessSelect, this, name, pswd, sql);
+		thread tmpProcessSelect(ProcessSelectThread, this, name, pswd, sql);
 		tmpProcessSelect.detach();
 		return 0;
 	};
@@ -192,7 +192,7 @@ public:
 };
 
 
-void ProcessSelect(void * uscn, string name, string pswd, string sql)
+void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
 {
 	UserConnect *usercnt = (UserConnect *)uscn;
 	if (isFindInUserInfoMap(name, pswd) == false)
