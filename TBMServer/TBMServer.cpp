@@ -446,6 +446,23 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 	return "failed";
 }
 
+time_t StringToDatetime(const char *str)
+{
+	tm tm_; 
+	int year, month, day, hour, minute,second; 
+	sscanf(str,"%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second); 
+	tm_.tm_year = year - 1900;
+	tm_.tm_mon = month - 1;
+	tm_.tm_mday = day;
+	tm_.tm_hour = hour;
+	tm_.tm_min = minute;
+	tm_.tm_sec = second;
+	tm_.tm_isdst = 0;
+
+	time_t t_ = mktime(&tm_); //已经减了8个时区 
+	return t_; //秒时间 
+}
+
 string ProcessCommonCmd(int clnt_sock, const char *buffer)
 {
 #ifdef DEBUG
@@ -480,6 +497,12 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 				{
 					if (isFindInUserInfoMap(user_name, user_pswd))
 					{
+						time_t t = time(NULL);
+						if (StringToDatetime(g_user_info_map[user_name].recv.c_str()) < t)
+						{
+							send(clnt_sock, "timeout", strlen("timeout"), 0);
+							return "timeout";
+						}
 						if (-1 == UserConnectManger::GetInstance()->AddUserConnect(clnt_sock, user_name))
 						{
 							send(clnt_sock, "this user is login.", strlen("this user is login."), 0);
@@ -811,6 +834,8 @@ int get_all_user_info()
 
 int DoRegister(string name,string pswd)
 {
+	//更新信息
+	get_all_user_info();
 	AutoLock autoLock(&g_mutex);
 	int nResult = 0;
 	if (name.empty())

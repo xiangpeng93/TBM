@@ -67,10 +67,18 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 		char buffer[1024 * 10] = { 0 };
 		int bufferSize = 1024 * 10 - 1;
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
-		if(nRet > 0){
+		if (nRet > 0){
 			if (strcmp(buffer, "success") == 0)
 			{
-				return 0;
+				return 200;
+			}
+			else if (strcmp(buffer, "timeout") == 0)
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
 			}
 		}
 		else
@@ -78,7 +86,7 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 			cout << "nRet : " << nRet << endl;
 		}
 	}
-	return nRet;
+	return 400;
 };
 
 int logout(char *userName, char *userPaswd)
@@ -106,7 +114,9 @@ void __stdcall Init()
 
 		return;
 	}
-	
+	int timeout = 5000; //3s
+	setsockopt(g_clntSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+	setsockopt(g_clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
 }
 
 void __stdcall Fini()

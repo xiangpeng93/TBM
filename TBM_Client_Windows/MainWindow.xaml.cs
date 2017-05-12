@@ -70,16 +70,24 @@ namespace TBM_Client_Windows
 				}
 
 				int port = Int32.Parse(textBox_port.Text);
-				
-				if (0 == Login(textBox_ip.Text,port,textBox_user.Text.ToString(), passwdBox_passwd.Password.ToString()))
+				int nRet = Login(textBox_ip.Text,port,textBox_user.Text.ToString(), passwdBox_passwd.Password.ToString());
+				if (200 == nRet)
 				{
 					ManalWindow manal = new ManalWindow();
 					manal.Show();
 					this.Close();
 				}
-				else
+				else if (-1 == nRet)
 				{
 					text_user_paswd_msg.Text = "登录失败，用户名或密码错误.";
+				}
+				else if (1 == nRet)
+				{
+					text_user_paswd_msg.Text = "登录失败，权限到期.";
+				}
+				else
+				{
+					text_user_paswd_msg.Text = "登录失败，服务器错误.";
 				}
 				//MessageBox.Show(textBox_user.Text.ToString());
 				//MessageBox.Show(passwdBox_passwd.Password.ToString());
