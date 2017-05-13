@@ -25,6 +25,7 @@
 
 using namespace std;
 
+//#define DEBUG 0
 #define EXPORT_API __stdcall
 #define MAX_CONNECT 100
 
@@ -82,7 +83,7 @@ bool isFindInUserInfoMap(string user_name, string user_pswd);
 int DoRegister(string name, string pswd);
 int DoCommonSql(string name, string pswd, string sql);
 int get_all_user_info();
-void ProcessSelect(void * uscn, string name, string pswd, string sql);
+void ProcessSelectThread(void * uscn, string name, string pswd, string sql);
 
 mutex g_mutex;
 class UserConnect;
@@ -140,20 +141,31 @@ public:
 
 	int DoSelectSql(string name, string pswd, string sql)
 	{
-		thread tmpProcessSelect(ProcessSelect, this, name, pswd, sql);
+		//ProcessSelectThread(this,name, pswd, sql);
+		thread tmpProcessSelect(ProcessSelectThread, this, name, pswd, sql);
 		tmpProcessSelect.detach();
 		return 0;
 	};
 
 	int GetMsg(char *userName, char *userCount, char *userPhone, char *shopName, char *costMoney, char *costMoneyForUser, char * dataTime)
 	{
+		//cout << "start search msg." << endl;
+		AutoLock autoLock(&m_user_connect_mutex);
+		time_t tbegin = time(0);
+		static int tNum = 0;
 		while (m_isSelectSuccess == false)
 		{
-			Sleep(100);
+			Sleep(10);
+			tNum++;
+			if (tNum > 100)
+			{
+				tNum = 0;
+				return 0;
+
+			}
 		}
 		if (m_list_callBack_info.size() > 0)
 		{
-			AutoLock autoLock(&m_user_connect_mutex);
 			list<HISTORY_DATA_INFO>::iterator iter = m_list_callBack_info.begin();
 			if (iter->userName.length() > 0)
 				strcpy_s(userName, iter->userName.length() + 1, iter->userName.c_str());
@@ -180,6 +192,9 @@ public:
 			m_isSelectSuccess = false; 
 		}
 
+		time_t tend = time(0);
+		//cout << "get msg cost : " << tend - tbegin << " second" << endl;
+
 		return 0;
 	};
 private:
@@ -192,9 +207,13 @@ public:
 };
 
 
-void ProcessSelect(void * uscn, string name, string pswd, string sql)
+void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
 {
+	//cout << "start search msg." << endl;
+	time_t tbegin = time(0);
 	UserConnect *usercnt = (UserConnect *)uscn;
+	AutoLock autoLock(&usercnt->m_user_connect_mutex);
+
 	if (isFindInUserInfoMap(name, pswd) == false)
 		return;
 	sqlite3 *db = init_db_by_name(name);
@@ -208,7 +227,7 @@ void ProcessSelect(void * uscn, string name, string pswd, string sql)
 		sqlite3_free(g_errMsg);
 		return;
 	}
-
+	usercnt->m_list_callBack_info.clear();
 	int nIndex = nCol;
 	for (int i = 0; i < nRow; i++)
 	{
@@ -262,15 +281,17 @@ void ProcessSelect(void * uscn, string name, string pswd, string sql)
 #ifdef DEBUG
 		cout << endl;
 #endif
-		AutoLock autoLock(&usercnt->m_user_connect_mutex);
 		usercnt->m_list_callBack_info.push_back(tempInfo);
+		usercnt->m_isSelectSuccess = true;
 #ifdef DEBUG
 		cout << usercnt->m_list_callBack_info.size() << endl;
 #endif
 	}
 	sqlite3_free_table(pResult);  //ʹ���������ͷ�Ϊ��¼������ڴ棬������ڴ�й©
 	close_db(db);
-	usercnt->m_isSelectSuccess = true;
+
+	time_t tend = time(0);
+	//cout << "select cost : " << tend - tbegin << " second" << endl;
 }
 
 class UserConnectManger
@@ -412,7 +433,7 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 					if (temp != NULL)
 					{
 						temp->DoSelectSql(user_name, user_pswd, cmd_value);
-						send(clnt_sock, "success", strlen("success"), 0);
+						send(clnt_sock, "success", strlen("success")+1, 0);
 						return "success";
 					}
 				}
@@ -423,26 +444,40 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 				UserConnect *temp = UserConnectManger::GetInstance()->FindUserConnectById(clnt_sock);
 				if (temp != NULL)
 				{
-					char tempInfo[7][1024] = { 0 };
-					temp->GetMsg(tempInfo[0], tempInfo[1], tempInfo[2], tempInfo[3], tempInfo[4], tempInfo[5], tempInfo[6]);
+					
 					CMarkupSTL cXmlRsp;
 					cXmlRsp.AddElem("info");
 					cXmlRsp.IntoElem();
-					cXmlRsp.AddElem("username", tempInfo[0]);
-					cXmlRsp.AddElem("usercount", tempInfo[1]);
-					cXmlRsp.AddElem("userphone", tempInfo[2]);
-					cXmlRsp.AddElem("shopname", tempInfo[3]);
-					cXmlRsp.AddElem("costmoney", tempInfo[4]);
-					cXmlRsp.AddElem("costmoneyforuser", tempInfo[5]);
-					cXmlRsp.AddElem("datetime", tempInfo[6]);
-
-					send(clnt_sock, cXmlRsp.GetDoc().c_str(), cXmlRsp.GetDoc().length(), 0);
+					int sendNum = 0;
+					while (temp->m_list_callBack_info.size()>0)
+					{
+						sendNum++;
+						char tempInfo[7][256] = { 0 };
+						temp->GetMsg(tempInfo[0], tempInfo[1], tempInfo[2], tempInfo[3], tempInfo[4], tempInfo[5], tempInfo[6]);
+						if (strcmp(tempInfo[0], "") != 0)
+							cXmlRsp.AddElem("username", tempInfo[0]);
+						if (strcmp(tempInfo[1], "") != 0)
+							cXmlRsp.AddElem("usercount", tempInfo[1]);
+						if (strcmp(tempInfo[2], "") != 0)
+							cXmlRsp.AddElem("userphone", tempInfo[2]);
+						if (strcmp(tempInfo[3], "") != 0)
+							cXmlRsp.AddElem("shopname", tempInfo[3]);
+						if (strcmp(tempInfo[4], "") != 0)
+							cXmlRsp.AddElem("costmoney", tempInfo[4]);
+						if (strcmp(tempInfo[5], "") != 0)
+							cXmlRsp.AddElem("costmoneyforuser", tempInfo[5]);
+						if (strcmp(tempInfo[6], "") != 0)
+							cXmlRsp.AddElem("datetime", tempInfo[6]);
+					}
+					//cout << "getmsg send num:" << sendNum << " length :" << cXmlRsp.GetDoc().length() + 1 << endl;
+					cXmlRsp.AddElem("username");
+					send(clnt_sock, cXmlRsp.GetDoc().c_str(), cXmlRsp.GetDoc().length() + 1, 0);
 					return "success";
 				}
 			}
 		}
 	}
-	send(clnt_sock, "failed", strlen("failed"), 0);
+	send(clnt_sock, "failed", strlen("failed") + 1, 0);
 	return "failed";
 }
 
@@ -495,20 +530,21 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 
 				if (cXml.GetData() == "login")
 				{
+					get_all_user_info();
 					if (isFindInUserInfoMap(user_name, user_pswd))
 					{
 						time_t t = time(NULL);
 						if (StringToDatetime(g_user_info_map[user_name].recv.c_str()) < t)
 						{
-							send(clnt_sock, "timeout", strlen("timeout"), 0);
+							send(clnt_sock, "timeout", strlen("timeout") + 1, 0);
 							return "timeout";
 						}
 						if (-1 == UserConnectManger::GetInstance()->AddUserConnect(clnt_sock, user_name))
 						{
-							send(clnt_sock, "this user is login.", strlen("this user is login."), 0);
+							send(clnt_sock, "this user is login.", strlen("this user is login.") + 1, 0);
 							return "success";
 						}
-						send(clnt_sock, "success", strlen("success"), 0);
+						send(clnt_sock, "success", strlen("success") + 1, 0);
 						return "success";
 					}
 				}
@@ -516,7 +552,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 				if (cXml.GetData() == "logout")
 				{
 					UserConnectManger::GetInstance()->DeleteUserConnectById(clnt_sock);
-					send(clnt_sock, "success", strlen("success"), 0);
+					send(clnt_sock, "success", strlen("success") + 1, 0);
 					return "success";
 				}
 
@@ -537,7 +573,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 						if (temp != NULL)
 						{
 							temp->DoCommonSql(user_name, user_pswd, cmd_value);
-							send(clnt_sock, "success", strlen("success"), 0);
+							send(clnt_sock, "success", strlen("success") + 1, 0);
 							return "success";
 						}
 					}
@@ -548,7 +584,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 		}
 	} while (0);
 	
-	send(clnt_sock, "failed", strlen("failed"), 0);
+	send(clnt_sock, "failed", strlen("failed") + 1, 0);
 	return "failed";
 }
 map<int, string> g_mapRecvMsg;
@@ -564,8 +600,8 @@ void ProcessMsg()
 
 	FD_SET(g_serverSock, &freads);
 	fd_max = g_serverSock;
-	timeout.tv_sec = 5;
-	timeout.tv_usec = 5000;
+	timeout.tv_sec = 3;
+	timeout.tv_usec = 0;
 	while (!g_isexit)
 	{
 		temps = freads;
@@ -597,8 +633,8 @@ void ProcessMsg()
 				else
 				{
 					
-					char buffer[1024*100] = { 0 };
-					int str_len = recv(i, buffer, 100*1024 - 1, 0);
+					char buffer[1500] = { 0 };
+					int str_len = recv(i, buffer, 1500 - 1, 0);
 					
 					if (str_len <= 0)//disconnect
 					{
@@ -617,7 +653,6 @@ void ProcessMsg()
 						if (g_mapRecvMsg[i].find("<info>") != -1 && g_mapRecvMsg[i].find("</info>") != -1)
 						{
 #ifdef DEBUG
-
 							cout << "recv msg : " << g_mapRecvMsg[i].c_str() << endl;
 #endif
 							CMarkupSTL cXml;
@@ -659,6 +694,8 @@ int __stdcall init_tbmServer()
 		cout << "last error " << GetLastError() << endl;
 	}
 	init_db();
+
+	
 	return nRet;
 }
 
@@ -698,6 +735,10 @@ int __stdcall start_tbmServer(int port)
 
 	//��ȡһ����Ϣ
 	get_all_user_info();
+
+	int timeout = 500; //3s
+	setsockopt(g_serverSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+	setsockopt(g_serverSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
 	return nRet;
 }
 
@@ -761,7 +802,6 @@ void close_db(sqlite3 *db)
 
 int get_all_user_info()
 {
-	
 	char** pResult;
 	int nRow;
 	int nCol;
@@ -835,7 +875,6 @@ int get_all_user_info()
 int DoRegister(string name,string pswd)
 {
 	//������Ϣ
-	get_all_user_info();
 	AutoLock autoLock(&g_mutex);
 	int nResult = 0;
 	if (name.empty())

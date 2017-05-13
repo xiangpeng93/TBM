@@ -59,6 +59,36 @@ namespace TBM_Client_Windows
 		DateTime lastDataTime;
 
         bool isFirstClicAddList = true;
+        private static System.Windows.Threading.DispatcherTimer readDataTimer = new System.Windows.Threading.DispatcherTimer();  
+ 
+  
+        public void timeCycle(object sender, EventArgs e)  
+        {
+            string TempUserName;
+            string TempShopName;
+            string TempDataTime;
+                StringBuilder TuserName = new StringBuilder(2048);
+                StringBuilder TuserCount = new StringBuilder(2048);
+                StringBuilder TuserPhone = new StringBuilder(2048);
+                StringBuilder ShopName = new StringBuilder(2048);
+                StringBuilder COSTMONEY = new StringBuilder(2048);
+                StringBuilder COSTMONEYForUser = new StringBuilder(2048);
+                StringBuilder sDateTime = new StringBuilder(2048);
+                GetMsg2(TuserName, TuserCount, TuserPhone, ShopName, COSTMONEY, COSTMONEYForUser, sDateTime);
+                TempUserName = TuserName.ToString();
+                TempShopName = ShopName.ToString();
+                TempDataTime = sDateTime.ToString();
+                if (TempUserName.Equals("") == false || TempShopName.Equals("") == false || TempDataTime.Equals("") == false)
+                {
+                    if (TempDataTime.Equals("0001-01-01 00:00:00Z") == false)
+                    {
+                        g_number++;
+                        Users.Add(new CInfoList(g_number.ToString(), TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString(), ShopName.ToString(), COSTMONEY.ToString(), COSTMONEYForUser.ToString(), sDateTime.ToString()));
+                    }
+                }
+            if (TempUserName.Equals("") && TempShopName.Equals("") && TempDataTime.Equals("") )
+               readDataTimer.Stop();
+        }  
 
         // 0 history Table
         // 1 historyUser Table
@@ -150,6 +180,8 @@ namespace TBM_Client_Windows
             while (NameShop.Equals("") == false);
             shopName.SelectedIndex = -1;
 
+            readDataTimer.Tick += new EventHandler(timeCycle);
+            readDataTimer.Interval = new TimeSpan(0, 0, 0, 0);
         }
         public void Update()
         {
@@ -377,7 +409,7 @@ namespace TBM_Client_Windows
             ComboBox combox = (ComboBox)sender;
             ComboBoxItem item = combox.SelectedItem as ComboBoxItem;
             
-            if (item != null)
+            if (item != null )
             {
                 //MessageBox.Show(item.Content.ToString());
                 string searchUser = sqlUserInfo + "where USERNAME = " + "'" + item.Content.ToString() + "'";
@@ -401,6 +433,11 @@ namespace TBM_Client_Windows
                     userPhone.Clear();
                 }
             }
+            else
+            {
+                userCount.Clear();
+                userPhone.Clear();
+            }
         }
 
         private void addUser_Click(object sender, RoutedEventArgs e)
@@ -412,6 +449,7 @@ namespace TBM_Client_Windows
 
         public void searchItemData()
         {
+            Users.Clear();
             isFirstClicAddList = true;
             string search = searchHistoryData;
             string sUserName = userName.Text;
@@ -487,36 +525,11 @@ namespace TBM_Client_Windows
                 Select2(search);
             }
 
-            string TempUserName;
-            string TempShopName;
-            string TempDataTime;
             g_number = 0;
             if (isSelectSuccess)
             {
-                Users.Clear();
-                do
-                {
-                    StringBuilder TuserName = new StringBuilder(2048);
-                    StringBuilder TuserCount = new StringBuilder(2048);
-                    StringBuilder TuserPhone = new StringBuilder(2048);
-                    StringBuilder ShopName = new StringBuilder(2048);
-                    StringBuilder COSTMONEY = new StringBuilder(2048);
-                    StringBuilder COSTMONEYForUser = new StringBuilder(2048);
-                    StringBuilder sDateTime = new StringBuilder(2048);
-                    GetMsg2(TuserName, TuserCount, TuserPhone, ShopName, COSTMONEY, COSTMONEYForUser, sDateTime);
-                    TempUserName = TuserName.ToString();
-                    TempShopName = ShopName.ToString();
-                    TempDataTime = sDateTime.ToString();
-                    if (TempUserName.Equals("") == false || TempShopName.Equals("") == false || TempDataTime.Equals("") == false )
-                    {
-						if (TempDataTime.Equals("0001-01-01 00:00:00Z") == false)
-                        {
-                            g_number++;
-                            Users.Add(new CInfoList(g_number.ToString(),TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString(), ShopName.ToString(), COSTMONEY.ToString(), COSTMONEYForUser.ToString(), sDateTime.ToString()));
-                        }
-					}
-                }
-                while (TempUserName.Equals("") == false || TempShopName.Equals("") == false || TempDataTime.Equals("") == false);
+
+                readDataTimer.Start(); 
             }
         }
         private void searchItem_Click(object sender, RoutedEventArgs e)

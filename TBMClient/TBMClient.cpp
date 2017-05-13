@@ -7,9 +7,11 @@
 #include <WinSock2.h>
 #include <iostream>
 #include <thread>
-
+#include <mutex>
+#include <list>
 #include "markup.h"
 
+//#define DEBUG 1
 using namespace std;
 
 string g_userName;
@@ -19,6 +21,20 @@ string g_ip;
 int g_port = 0;
 
 int g_clntSock;
+mutex g_mutex;
+
+typedef struct msgRecvStruct
+{
+	string userName;
+	string userCount;
+	string userPhone;
+	string shopName;
+	string costMoney;
+	string costMoneyForUser;
+	string dataTime;
+};
+list<msgRecvStruct> g_lRecvMsg;
+string GetMsgRspBuffer;
 
 string assemblyMsg(const char *userName, const char *paswd, const char* cmd, const char *user_cmd, const char *cmd_msg)
 {
@@ -61,11 +77,11 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 	}
 
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "login", "");
-	nRet = send(g_clntSock, req.c_str(), req.length(), 0);
+	nRet = send(g_clntSock, req.c_str(), req.length() + 1, 0);
 	if (nRet != -1)
 	{
-		char buffer[1024 * 10] = { 0 };
-		int bufferSize = 1024 * 10 - 1;
+		char buffer[1500] = { 0 };
+		int bufferSize = 1500 - 1;
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
 			if (strcmp(buffer, "success") == 0)
@@ -114,7 +130,7 @@ void __stdcall Init()
 
 		return;
 	}
-	int timeout = 5000; //3s
+	int timeout = 500; //3s
 	setsockopt(g_clntSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 	setsockopt(g_clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
 }
@@ -148,10 +164,10 @@ void  __stdcall Select(char *sql)
 {
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "selectsql", sql);
 	int nRet = send(g_clntSock, req.c_str(), req.length(), 0);
-	int bufferSize = 1024 * 10 - 1;
+	int bufferSize = 1500 - 1;
 	if (nRet != -1)
 	{
-		char buffer[1024 * 10] = { 0 };
+		char buffer[1500] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
 #ifdef DEBUG
@@ -164,6 +180,62 @@ void  __stdcall Select(char *sql)
 			cout << "nRet : " << nRet << endl;
 		}
 	}
+
+	req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "getmsg", "");
+	nRet = send(g_clntSock, req.c_str(), req.length(), 0);
+	do{
+		char buffer[1500] = { 0 };
+		nRet = recv(g_clntSock, buffer, bufferSize, 0);
+		GetMsgRspBuffer += buffer;
+#ifdef DEBUG
+
+		cout << "buffer : " << GetMsgRspBuffer << endl;
+		cout << "size : " << strlen(GetMsgRspBuffer.c_str()) << endl;
+#endif
+	} while (GetMsgRspBuffer.find("<info>") == -1 || GetMsgRspBuffer.find("</info>") == -1);
+	//cout << "size : " << strlen(GetMsgRspBuffer.c_str()) << endl;
+
+	CMarkupSTL cXml;
+	cXml.SetDoc(GetMsgRspBuffer.c_str());
+	GetMsgRspBuffer = "";
+	cXml.FindElem("info");
+	cXml.IntoElem();
+	while (cXml.FindElem("username"))
+	{
+		msgRecvStruct tMsg;
+		tMsg.userName = cXml.GetData().c_str();
+		
+		if (cXml.FindElem("usercount"))
+		{
+			tMsg.userCount = cXml.GetData().c_str();
+		}
+		if (cXml.FindElem("userphone"))
+		{
+			tMsg.userPhone = cXml.GetData().c_str();
+		}
+		if (cXml.FindElem("shopname"))
+		{
+			tMsg.shopName = cXml.GetData().c_str();
+		}
+		if (cXml.FindElem("costmoney"))
+		{
+			tMsg.costMoney = cXml.GetData().c_str();
+		}
+		if (cXml.FindElem("costmoneyforuser"))
+		{
+			tMsg.costMoneyForUser = cXml.GetData().c_str();
+		}
+		if (cXml.FindElem("datetime"))
+		{
+			tMsg.dataTime = cXml.GetData().c_str();
+		}
+		g_mutex.lock();
+		if (!tMsg.userName.empty())
+			g_lRecvMsg.push_back(tMsg);
+		g_mutex.unlock();
+
+		//std::cout << g_lRecvMsg.size() << endl;
+	};
 }
 
 void  __stdcall Select2(char *sql)
@@ -195,10 +267,10 @@ void __stdcall CommonSql(char *sql)
 {
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "commonsql", sql);
 	int nRet = send(g_clntSock, req.c_str(), req.length(), 0);
-	int bufferSize = 1024 * 10 - 1;
+	int bufferSize = 1500 - 1;
 	if (nRet != -1)
 	{
-		char buffer[1024 * 10] = { 0 };
+		char buffer[1500] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
 #ifdef DEBUG
@@ -227,17 +299,37 @@ void __stdcall GetMsg(char *userName, char *userCount, char *userPhone)
 <user_cmd>getmsg</user_cmd>
 </info>
 */
-string GetMsgRspBuffer;
 void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *shopName, char *costMoney, char *costMoneyForUser, char * dataTime)
 {
-	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "getmsg", "");
+	if (g_lRecvMsg.size() > 0)
+	{
+		if (userName != NULL)
+		strcpy(userName, g_lRecvMsg.begin()->userName.c_str());
+		if (userCount != NULL)
+			strcpy(userCount, g_lRecvMsg.begin()->userCount.c_str());
+		if (userPhone != NULL)
+			strcpy(userPhone, g_lRecvMsg.begin()->userPhone.c_str());
+		if (shopName != NULL)
+			strcpy(shopName, g_lRecvMsg.begin()->shopName.c_str());
+		if (costMoney != NULL)
+			strcpy(costMoney, g_lRecvMsg.begin()->costMoney.c_str());
+		if (costMoneyForUser != NULL)
+			strcpy(costMoneyForUser, g_lRecvMsg.begin()->costMoneyForUser.c_str()); 
+		if (dataTime != NULL)
+			strcpy(dataTime, g_lRecvMsg.begin()->dataTime.c_str());
+		g_mutex.lock();
+		g_lRecvMsg.erase(g_lRecvMsg.begin());
+		g_mutex.unlock();
+
+	}
+	/*string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "getmsg", "");
 
 	int nRet = send(g_clntSock, req.c_str(), req.length(), 0);
-	int bufferSize = 1024 * 10 - 1;
+	int bufferSize = 1500 - 1;
 	if (nRet != -1)
-	{
-		do{
-			char buffer[1024 * 10] = { 0 };
+	{*/
+		/*do{
+			char buffer[1500] = { 0 };
 			nRet = recv(g_clntSock, buffer, bufferSize, 0);
 			GetMsgRspBuffer += buffer;
 #ifdef DEBUG
@@ -280,7 +372,7 @@ void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *s
 		if (cXml.FindElem("datetime") && dataTime != NULL)
 		{
 			strcpy(dataTime, cXml.GetData().c_str());
-		}
-	}
+		}*/
+	//}
 }
 
