@@ -193,7 +193,8 @@ void  __stdcall Select(char *sql)
 		cout << "size : " << strlen(GetMsgRspBuffer.c_str()) << endl;
 #endif
 	} while (GetMsgRspBuffer.find("<info>") == -1 || GetMsgRspBuffer.find("</info>") == -1);
-	//cout << "size : " << strlen(GetMsgRspBuffer.c_str()) << endl;
+	//cout << "size : " << (GetMsgRspBuffer.c_str()) << endl;
+	g_mutex.lock();
 
 	CMarkupSTL cXml;
 	cXml.SetDoc(GetMsgRspBuffer.c_str());
@@ -204,7 +205,8 @@ void  __stdcall Select(char *sql)
 	{
 		msgRecvStruct tMsg;
 		tMsg.userName = cXml.GetData().c_str();
-		
+		//std::cout << tMsg.userName.c_str() << endl;
+
 		if (cXml.FindElem("usercount"))
 		{
 			tMsg.userCount = cXml.GetData().c_str();
@@ -229,13 +231,13 @@ void  __stdcall Select(char *sql)
 		{
 			tMsg.dataTime = cXml.GetData().c_str();
 		}
-		g_mutex.lock();
 		if (!tMsg.userName.empty())
 			g_lRecvMsg.push_back(tMsg);
-		g_mutex.unlock();
 
 		//std::cout << g_lRecvMsg.size() << endl;
 	};
+	g_mutex.unlock();
+
 }
 
 void  __stdcall Select2(char *sql)
@@ -273,8 +275,7 @@ void __stdcall CommonSql(char *sql)
 		char buffer[1500] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
-#ifdef DEBUG
-
+#if DEBUG
 			cout << "buffer : " << buffer << endl;
 			cout << "size : " << strlen(buffer) << endl;
 #endif
@@ -301,6 +302,7 @@ void __stdcall GetMsg(char *userName, char *userCount, char *userPhone)
 */
 void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *shopName, char *costMoney, char *costMoneyForUser, char * dataTime)
 {
+	g_mutex.lock();
 	if (g_lRecvMsg.size() > 0)
 	{
 		if (userName != NULL)
@@ -316,12 +318,15 @@ void __stdcall GetMsg2(char *userName, char *userCount, char *userPhone, char *s
 		if (costMoneyForUser != NULL)
 			strcpy(costMoneyForUser, g_lRecvMsg.begin()->costMoneyForUser.c_str()); 
 		if (dataTime != NULL)
+		{
 			strcpy(dataTime, g_lRecvMsg.begin()->dataTime.c_str());
-		g_mutex.lock();
+			//cout << dataTime << endl;
+		}
 		g_lRecvMsg.erase(g_lRecvMsg.begin());
-		g_mutex.unlock();
 
 	}
+	g_mutex.unlock();
+
 	/*string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "getmsg", "");
 
 	int nRet = send(g_clntSock, req.c_str(), req.length(), 0);

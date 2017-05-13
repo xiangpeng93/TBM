@@ -316,33 +316,6 @@ namespace TBM_Client_Windows
             Insert(insertToHistoryData);
 
             return;
-
-			string selectSql = "select * from HISTORYDATA where USERNAME='";
-			selectSql+= name;
-			selectSql+= "' and ";
-			selectSql+= "SHOPNAME='";
-			selectSql+= shop;
-			selectSql+= "'";
-			selectSql+= " and ";
-			selectSql+= "DATETIME='";
-			selectSql += "0001-01-01 00:00:00Z";
-			selectSql+= "'";
-
-			Select(selectSql);
-			string Name = "";
-			do
-			{
-				StringBuilder TuserName = new StringBuilder(2048);
-				StringBuilder TuserCount = new StringBuilder(2048);
-				StringBuilder TuserPhone = new StringBuilder(2048);
-				GetMsg(TuserName, TuserCount, TuserPhone);
-				Name = TuserName.ToString();
-				if (Name.Equals("") == true)
-				{
-					
-				}
-			}
-			while (Name.Equals("") == false);
 		}		
 
 		private void updateAllInfo()
@@ -363,8 +336,7 @@ namespace TBM_Client_Windows
 				if (Name.Equals("") == false)
 				{
 					m_shopList.Add(Name);
-					Console.Write(Name);
-					Console.Write("\r\n");
+					
 				}
 			}
 			while (Name.Equals("") == false);
@@ -388,14 +360,16 @@ namespace TBM_Client_Windows
 					UserInfoTemp.userCount = TuserCount.ToString();
 					UserInfoTemp.userPhone = TuserPhone.ToString();
 					m_userList.Add(UserInfoTemp);
-					Console.Write(Name);
-					Console.Write("\r\n");
+					
 				}
 			}
 			while (Name.Equals("") == false);
 
             Delete("DELETE from HISTORYDATA where DATETIME='0001-01-01 00:00:00Z'");
-
+            Console.Write(m_userList.Count);
+            Console.Write("\r\n");
+            Console.Write(m_shopList.Count);
+            Console.Write("\r\n");
 			foreach (var useritem in m_userList)
 			{
 				foreach (var shopitem in m_shopList)

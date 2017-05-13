@@ -213,6 +213,7 @@ void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
 	time_t tbegin = time(0);
 	UserConnect *usercnt = (UserConnect *)uscn;
 	AutoLock autoLock(&usercnt->m_user_connect_mutex);
+	usercnt->m_list_callBack_info.clear();
 
 	if (isFindInUserInfoMap(name, pswd) == false)
 		return;
@@ -227,7 +228,6 @@ void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
 		sqlite3_free(g_errMsg);
 		return;
 	}
-	usercnt->m_list_callBack_info.clear();
 	int nIndex = nCol;
 	for (int i = 0; i < nRow; i++)
 	{
@@ -449,26 +449,26 @@ string ProcessSelect(int clnt_sock, const char *buffer)
 					cXmlRsp.AddElem("info");
 					cXmlRsp.IntoElem();
 					int sendNum = 0;
-					while (temp->m_list_callBack_info.size()>0)
+					do
 					{
 						sendNum++;
 						char tempInfo[7][256] = { 0 };
 						temp->GetMsg(tempInfo[0], tempInfo[1], tempInfo[2], tempInfo[3], tempInfo[4], tempInfo[5], tempInfo[6]);
-						if (strcmp(tempInfo[0], "") != 0)
+						//if (strcmp(tempInfo[0], "") != 0)
 							cXmlRsp.AddElem("username", tempInfo[0]);
-						if (strcmp(tempInfo[1], "") != 0)
+						//if (strcmp(tempInfo[1], "") != 0)
 							cXmlRsp.AddElem("usercount", tempInfo[1]);
-						if (strcmp(tempInfo[2], "") != 0)
+						//if (strcmp(tempInfo[2], "") != 0)
 							cXmlRsp.AddElem("userphone", tempInfo[2]);
-						if (strcmp(tempInfo[3], "") != 0)
+						//if (strcmp(tempInfo[3], "") != 0)
 							cXmlRsp.AddElem("shopname", tempInfo[3]);
-						if (strcmp(tempInfo[4], "") != 0)
+						//if (strcmp(tempInfo[4], "") != 0)
 							cXmlRsp.AddElem("costmoney", tempInfo[4]);
-						if (strcmp(tempInfo[5], "") != 0)
+						//if (strcmp(tempInfo[5], "") != 0)
 							cXmlRsp.AddElem("costmoneyforuser", tempInfo[5]);
-						if (strcmp(tempInfo[6], "") != 0)
+						//if (strcmp(tempInfo[6], "") != 0)
 							cXmlRsp.AddElem("datetime", tempInfo[6]);
-					}
+					} while (temp->m_list_callBack_info.size() > 0);
 					//cout << "getmsg send num:" << sendNum << " length :" << cXmlRsp.GetDoc().length() + 1 << endl;
 					cXmlRsp.AddElem("username");
 					send(clnt_sock, cXmlRsp.GetDoc().c_str(), cXmlRsp.GetDoc().length() + 1, 0);
