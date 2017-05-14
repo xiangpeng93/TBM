@@ -20,8 +20,10 @@ string g_userPaswd;
 string g_ip;
 int g_port = 0;
 
-int g_clntSock;
+int g_clntSock = -1;
 mutex g_mutex;
+
+
 
 typedef struct msgRecvStruct
 {
@@ -130,7 +132,7 @@ void __stdcall Init()
 
 		return;
 	}
-	int timeout = 500; //3s
+	int timeout = 0; //3s
 	setsockopt(g_clntSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 	setsockopt(g_clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
 }
@@ -138,6 +140,8 @@ void __stdcall Init()
 void __stdcall Fini()
 {
 	int nRet = -1;
+	if (g_clntSock != -1)
+		closesocket(g_clntSock);
 	nRet = WSACleanup();
 	if (nRet != 0)
 	{
@@ -145,6 +149,14 @@ void __stdcall Fini()
 	}
 	return;
 }
+
+void reconnect()
+{
+	Fini();
+	Init();
+	Login((char*)g_ip.c_str(), g_port, (char*)g_userName.c_str(), (char*)g_userPaswd.c_str());
+};
+
 
 void __stdcall Insert(char *sql)
 {
@@ -180,12 +192,30 @@ void  __stdcall Select(char *sql)
 			cout << "nRet : " << nRet << endl;
 		}
 	}
+	else
+	{
+		cout << "nRet : " << nRet << endl;
+		reconnect();
+		return ;
+	}
 
 	req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "select", "getmsg", "");
 	nRet = send(g_clntSock, req.c_str(), req.length(), 0);
+	if (nRet == -1)
+	{
+		cout << "nRet : " << nRet << endl;
+		reconnect();
+		return ;
+	}
 	do{
 		char buffer[1500] = { 0 };
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
+		if (nRet == -1)
+		{
+			cout << "nRet : " << nRet << endl;
+			reconnect();
+			return;
+		}
 		GetMsgRspBuffer += buffer;
 #ifdef DEBUG
 
@@ -284,6 +314,12 @@ void __stdcall CommonSql(char *sql)
 		{
 			cout << "nRet : " << nRet << endl;
 		}
+	}
+	if (nRet == -1)
+	{
+		cout << "nRet : " << nRet << endl;
+		reconnect();
+		return;
 	}
 }
 

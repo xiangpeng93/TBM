@@ -30,8 +30,6 @@ namespace TBM_Client_Windows
 		{
 			InitializeComponent();
 			this.MouseLeftButtonDown += Window_Drop;
-			//从数据库中读入用户信息
-			Init();
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
