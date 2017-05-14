@@ -41,6 +41,8 @@ using namespace std;
 
 #define SELECT_FROM_USER_DB_TABLE "select * from user_table order by name"
 
+void closeSockById(int i);
+
 struct user_info_struct{
 	string id;
 	string name;
@@ -374,7 +376,19 @@ public:
 		return NULL;
 	};
 	
+	void CheckConnectAlive()
+	{
+		map<int, UserConnect*>::iterator iter = m_mapUserConnect.begin();
 
+		for (; iter != m_mapUserConnect.end(); iter++)
+		{
+			if (-1 == send(iter->first, " ", 1, 0))
+			{
+				closeSockById(iter->first);
+				m_mapUserConnect.erase(iter++);
+			}
+		}
+	}
 private:
 	map<int, UserConnect*> m_mapUserConnect;
 	mutex m_user_connect_manger_mutex;
@@ -588,11 +602,17 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 	return "failed";
 }
 map<int, string> g_mapRecvMsg;
-
+fd_set freads;
+void closeSockById(int i)
+{
+	FD_CLR(i, &freads);
+	closesocket(i);
+	cout << "disconnect client " << i << endl;
+}
 
 void ProcessMsg()
 {
-	fd_set freads, temps;
+	fd_set temps;
 	int  fd_max, fd_num;
 	timeval timeout;
 	FD_ZERO(&freads);
@@ -628,7 +648,7 @@ void ProcessMsg()
 					}
 					g_mapRecvMsg[clnt_sock] = "";
 					string ipAddr = inet_ntoa(clntAddr.sin_addr);
-					cout << "new client . Ip : " << ipAddr.c_str() << " Port : " << htons(clntAddr.sin_port) << endl;			
+					cout << "new client . Ip : " << ipAddr.c_str() << " Port : " << htons(clntAddr.sin_port) << " sock id : " << clnt_sock << endl;
 				}
 				else
 				{
@@ -638,14 +658,13 @@ void ProcessMsg()
 					
 					if (str_len <= 0)//disconnect
 					{
-						FD_CLR(i, &freads);
 						if (NULL != UserConnectManger::GetInstance()->FindUserConnectById(i))
 						{
 							UserConnectManger::GetInstance()->DeleteUserConnectById(i);
 						}
 						g_mapRecvMsg.erase(g_mapRecvMsg.find(i));
-						closesocket(i);
-						cout << "disconnect client " << i << endl;
+
+						closeSockById(i);
 					}
 					else if (str_len > 0)
 					{
@@ -684,6 +703,19 @@ void ProcessMsg()
 	}
 }
 
+DWORD  CALLBACK CheckConnectTimer(PVOID pvoid)
+{
+	while (!g_isexit)
+	{
+#ifdef DEBUG
+		cout << "start CheckConnectTimer" << endl;
+#endif
+		UserConnectManger::GetInstance()->CheckConnectAlive();
+		Sleep(5000);
+	}
+	return 0;
+}
+
 int __stdcall init_tbmServer()
 {
 	int nRet = -1;
@@ -694,8 +726,9 @@ int __stdcall init_tbmServer()
 		cout << "last error " << GetLastError() << endl;
 	}
 	init_db();
-
-	
+	DWORD dwThreadId;
+	// 创建线程  
+	HANDLE hThread = ::CreateThread(NULL, 0, CheckConnectTimer, 0, 0, &dwThreadId);
 	return nRet;
 }
 

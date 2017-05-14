@@ -76,6 +76,7 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 	if (nRet != 0)
 	{
 		cout << "last error " << GetLastError() << endl;
+		return 400;
 	}
 
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "login", "");
