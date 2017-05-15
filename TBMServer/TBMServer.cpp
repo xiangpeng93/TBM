@@ -378,6 +378,8 @@ public:
 	
 	void CheckConnectAlive()
 	{
+		AutoLock autoLock(&m_user_connect_manger_mutex);
+
 		map<int, UserConnect*>::iterator iter = m_mapUserConnect.begin();
 
 		for (; iter != m_mapUserConnect.end(); iter++)
@@ -606,9 +608,11 @@ fd_set freads;
 void closeSockById(int i)
 {
 	AutoLock autoLock(&g_mutex);
-
-	FD_CLR(i, &freads);
-	closesocket(i);
+	if (FD_ISSET(i, &freads))
+	{
+		FD_CLR(i, &freads);
+		closesocket(i);
+	}
 	cout << "disconnect client " << i << endl;
 }
 
@@ -656,8 +660,6 @@ void ProcessMsg()
 				}
 				else
 				{
-					AutoLock autoLock(&g_mutex);
-
 					char buffer[1500] = { 0 };
 					int str_len = recv(i, buffer, 1500 - 1, 0);
 					
