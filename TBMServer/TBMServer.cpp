@@ -605,6 +605,8 @@ map<int, string> g_mapRecvMsg;
 fd_set freads;
 void closeSockById(int i)
 {
+	AutoLock autoLock(&g_mutex);
+
 	FD_CLR(i, &freads);
 	closesocket(i);
 	cout << "disconnect client " << i << endl;
@@ -638,6 +640,8 @@ void ProcessMsg()
 			{
 				if (i == g_serverSock) //connection 
 				{
+					AutoLock autoLock(&g_mutex);
+
 					SOCKADDR_IN clntAddr;
 					int clntAddrSz = sizeof(SOCKADDR_IN);
 					int clnt_sock = accept(g_serverSock, (sockaddr *)&clntAddr, &clntAddrSz);
@@ -652,7 +656,8 @@ void ProcessMsg()
 				}
 				else
 				{
-					
+					AutoLock autoLock(&g_mutex);
+
 					char buffer[1500] = { 0 };
 					int str_len = recv(i, buffer, 1500 - 1, 0);
 					
@@ -710,8 +715,8 @@ DWORD  CALLBACK CheckConnectTimer(PVOID pvoid)
 #ifdef DEBUG
 		cout << "start CheckConnectTimer" << endl;
 #endif
-		UserConnectManger::GetInstance()->CheckConnectAlive();
 		Sleep(5000);
+		UserConnectManger::GetInstance()->CheckConnectAlive();
 	}
 	return 0;
 }
