@@ -296,36 +296,36 @@ namespace TBM_Client_Windows
             string sql = cmdDeleteHistoryData;
             if (!item.UserName.Equals(""))
             {
-                sql += "USERNAME = '";
+                sql += "USERNAME = \"";
                 sql += item.UserName.ToString();
-                sql += "'";
+                sql += "\"";
 				if (!item.UserCount.Equals(""))
 				{
 					sql += " and ";
-					sql += "USERCOUNT='";
+					sql += "USERCOUNT=\"";
 					sql += item.UserCount.ToString();
-					sql += "'";
+					sql += "\"";
 				}
 				if (!item.UserPhone.Equals(""))
 				{
 					sql += " and ";
-					sql += " USERPHONE = '";
+					sql += " USERPHONE = \"";
 					sql += item.UserPhone.ToString();
-					sql += "'";
+					sql += "\"";
 				}
 				if (!item.ShopName.Equals(""))
 				{
 					sql += " and ";
-					sql += " SHOPNAME = '";
+					sql += " SHOPNAME = \"";
 					sql += item.ShopName.ToString();
-					sql += "'";
+					sql += "\"";
 				}
 				if (!item.DateTime.Equals(""))
 				{
 					sql += " and ";
-					sql += " DATETIME = '";
+					sql += " DATETIME = \"";
 					sql += item.DateTime.ToString();
-					sql += "'";
+					sql += "\"";
 				}
 
                 Delete(sql);
@@ -412,7 +412,7 @@ namespace TBM_Client_Windows
             if (item != null )
             {
                 //MessageBox.Show(item.Content.ToString());
-                string searchUser = sqlUserInfo + "where USERNAME = " + "'" + item.Content.ToString() + "'";
+                string searchUser = sqlUserInfo + "where USERNAME = " + "\"" + item.Content.ToString() + "\"";
                 Select(searchUser);
 
                 string Name = "";
@@ -458,9 +458,9 @@ namespace TBM_Client_Windows
             bool isSelectSuccess = false;
             if (!sUserName.Equals(""))
             {
-                search += "where USERNAME='";
+                search += "where USERNAME=\"";
                 search += sUserName;
-                search += "' ";
+                search += "\" ";
                 isSelectName = true;
             }
             else if (sShopName.Equals(""))
@@ -468,11 +468,11 @@ namespace TBM_Client_Windows
 
                 if (!beginDataTime.ToString("u").Equals("0001-01-01 00:00:00Z") && !lastDataTime.ToString("u").Equals("0001-01-01 00:00:00Z"))
                 {
-                    search += " where datetime > '";
+                    search += " where datetime > \"";
                     search += beginDataTime.ToString("u");
-                    search += "' and datetime < '";
+                    search += "\" and datetime < \"";
                     search += lastDataTime.ToString("u");
-                    search += "'";
+                    search += "\"";
 
                 }
                 search += " order by DATETIME";
@@ -490,16 +490,16 @@ namespace TBM_Client_Windows
                 {
                     search += "where ";
                 }
-                search += "SHOPNAME='";
+                search += "SHOPNAME=\"";
                 search += sShopName;
-                search += "' ";
+                search += "\" ";
                 if (!beginDataTime.ToString("u").Equals("0001-01-01 00:00:00Z") && !lastDataTime.ToString("u").Equals("0001-01-01 00:00:00Z"))
                 {
-                    search += " and datetime > '";
+                    search += " and datetime > \"";
                     search += beginDataTime.ToString("u");
-                    search += "' and datetime < '";
+                    search += "\" and datetime < \"";
                     search += lastDataTime.ToString("u");
-                    search += "'";
+                    search += "\"";
 
                 }
 
@@ -514,11 +514,11 @@ namespace TBM_Client_Windows
                 isSelectSuccess = true;
                 if (!beginDataTime.ToString("u").Equals("0001-01-01 00:00:00Z") && !lastDataTime.ToString("u").Equals("0001-01-01 00:00:00Z"))
                 {
-                    search += " and datetime > '";
+                    search += " and datetime > \"";
                     search += beginDataTime.ToString("u");
-                    search += "' and datetime < '";
+                    search += "\" and datetime < \"";
                     search += lastDataTime.ToString("u");
-                    search += "'";
+                    search += "\"";
                 }
 
                 search += "order by DATETIME";
@@ -546,23 +546,23 @@ namespace TBM_Client_Windows
             string search = searchHistoryData;
             if (!sUserName.Equals(""))
             {
-            search += "where USERNAME='";
+            search += "where USERNAME=\"";
             search += sUserName;
-            search += "' ";
+            search += "\" ";
             }
             if (!sShopName.Equals(""))
             {
             search += "and ";
-            search += "SHOPNAME='";
+            search += "SHOPNAME=\"";
             search += sShopName;
-            search += "' ";
+            search += "\" ";
             }
             if (!sDateTime.Equals(""))
             {
             search += "and ";
-            search += "DATETIME='";
+            search += "DATETIME=\"";
             search += sDateTime;
-            search += "' ";
+            search += "\" ";
             }
 
             Select2(search);
@@ -585,21 +585,21 @@ namespace TBM_Client_Windows
             !sUserName.Equals("") && !sShopName.Equals(""))
             {
             string temp = InsertHistoryData;
-            temp += "('";
+            temp += "(\"";
             temp += sUserName;
-            temp += "','";
+            temp += "\",\"";
             temp += sUserCount;
-            temp += "','";
+            temp += "\",\"";
             temp += sUserPhone;
-            temp += "','";
+            temp += "\",\"";
             temp += sShopName;
-            temp += "','";
+            temp += "\",\"";
             temp += sCostMoney;
-            temp += "','";
+            temp += "\",\"";
             temp += sCostForUser;
-            temp += "','";
+            temp += "\",\"";
             temp += sDateTime;            // 2008-9-4 20:02:10;
-            temp += "')";
+            temp += "\")";
 
             string sql = temp;
             Insert(sql);
@@ -661,9 +661,9 @@ namespace TBM_Client_Windows
 			search += searchHistoryData;
 			if (!shopName.Text.Equals(""))
 			{
-				search += " where SHOPNAME='";
+				search += " where SHOPNAME=\"";
 				search += shopName.Text.ToString();
-				search += "'";
+				search += "\"";
 			}
 			else
 			{

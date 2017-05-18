@@ -50,62 +50,62 @@ namespace TBM_Client_Windows
             temp = HistoryDataTable;
 			temp += "SET ";
 
-			temp += "USERNAME = '";
+			temp += "USERNAME = \"";
 			temp += username.Text;
-			temp += "' , ";
+			temp += "\" , ";
 
-			temp += "USERCOUNT = '";
+			temp += "USERCOUNT = \"";
 			temp += usercount.Text;
-			temp += "' , ";
+			temp += "\" , ";
 
-			temp += "USERPHONE = '";
+			temp += "USERPHONE = \"";
 			temp += userphone.Text;
-			temp += "' , ";
+			temp += "\" , ";
 
-			temp += "SHOPNAME = '";
+			temp += "SHOPNAME = \"";
 			temp += shopName.Text;
-			temp += "' , ";
+			temp += "\" , ";
 
-			temp += "COSTMONEY = '";
+			temp += "COSTMONEY = \"";
 			temp += usermoney.Text;
-			temp += "', ";
+			temp += "\", ";
 
-			temp += "COSTMONEYFORUSER = '";
+			temp += "COSTMONEYFORUSER = \"";
 			temp += usercostMoney.Text;
-			temp += "', ";
+			temp += "\", ";
 
-			temp += "DATETIME = '";
+			temp += "DATETIME = \"";
 			temp += usertime.Text;
 
-			temp += "' WHERE ";
+			temp += "\" WHERE ";
 
-			temp += "USERNAME = '";
+			temp += "USERNAME = \"";
 			temp += tUserName;
-			temp += "' and ";
+			temp += "\" and ";
 
-			temp += "USERCOUNT = '";
+			temp += "USERCOUNT = \"";
 			temp += tUserCount;
-			temp += "' and ";
+			temp += "\" and ";
 
-			temp += "USERPHONE = '";
+			temp += "USERPHONE = \"";
 			temp += tUserPhone;
-			temp += "' and ";
+			temp += "\" and ";
 
-			temp += "SHOPNAME = '";
+			temp += "SHOPNAME = \"";
 			temp += tShopName;
-			temp += "' and ";
+			temp += "\" and ";
 
-			temp += "COSTMONEY = '";
+			temp += "COSTMONEY = \"";
 			temp += tMoney;
-			temp += "' and ";
+			temp += "\" and ";
 
-			temp += "COSTMONEYFORUSER = '";
+			temp += "COSTMONEYFORUSER = \"";
 			temp += tCostMoney;
-			temp += "' and ";
+			temp += "\" and ";
 
-			temp += "DATETIME = '";
+			temp += "DATETIME = \"";
 			temp += tDatetime;
-			temp += "' ";
+			temp += "\" ";
 			Delete(temp);
 
 

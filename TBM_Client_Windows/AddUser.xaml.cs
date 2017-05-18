@@ -131,21 +131,21 @@ namespace TBM_Client_Windows
 
             if (!item.UserName.Equals(""))
             {
-                sql += "USERNAME = '";
+                sql += "USERNAME = \"";
                 sql += item.UserName.ToString();
-                sql += "'";
+                sql += "\"";
                 if (!item.UserCount.Equals(""))
                 {
                     sql += " and ";
-                    sql += "USERCOUNT='";
+                    sql += "USERCOUNT=\"";
                     sql += item.UserCount.ToString();
-                    sql += "'";
+                    sql += "\"";
                     if (!item.UserPhone.Equals(""))
                     {
                         sql += " and ";
-                        sql += " USERPHONE = '";
+                        sql += " USERPHONE = \"";
                         sql += item.UserPhone.ToString();
-                        sql += "' ";
+                        sql += "\" ";
                     }
                 }
                 Delete(sql);
@@ -159,13 +159,13 @@ namespace TBM_Client_Windows
             if (!userName.Text.Equals("") && !userCount.Text.Equals(""))
             {
                 string sql = cmdInsert;
-                sql += "('";
+                sql += "(\"";
                 sql += userName.Text;
-                sql += "','";
+                sql += "\",\"";
                 sql += userCount.Text;
-                sql += "','";
+                sql += "\",\"";
                 sql += userPhone.Text;
-                sql += "')";
+                sql += "\")";
                 Insert(sql);
             }
             m_manger.Update();
@@ -194,13 +194,13 @@ namespace TBM_Client_Windows
             if (!userName.Text.Equals("") && !userCount.Text.Equals(""))
             {
                 string sql = cmdInsertShop;
-                sql += "('";
+                sql += "(\"";
                 sql += userName.Text;
-                sql += "','";
+                sql += "\",\"";
                 sql += userCount.Text;
-                sql += "','";
+                sql += "\",\"";
                 sql += userPhone.Text;
-                sql += "')";
+                sql += "\")";
                 Insert(sql);
             }
             m_manger.Update();
@@ -297,22 +297,22 @@ namespace TBM_Client_Windows
 		private void InsertIfNotExit(string name,string count,string phone,string shop)
 		{
             string insertToHistoryData = "INSERT INTO HISTORYDATA (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
-            insertToHistoryData += "('";
+            insertToHistoryData += "(\"";
             insertToHistoryData += name;
-            insertToHistoryData += "','";
+            insertToHistoryData += "\",\"";
             insertToHistoryData += count;
-            insertToHistoryData += "','";
+            insertToHistoryData += "\",\"";
             insertToHistoryData += phone;
-            insertToHistoryData += "','";
+            insertToHistoryData += "\",\"";
 
             insertToHistoryData += shop;
-            insertToHistoryData += "','";
+            insertToHistoryData += "\",\"";
             insertToHistoryData += "";
-            insertToHistoryData += "','";
+            insertToHistoryData += "\",\"";
             insertToHistoryData += "";
-            insertToHistoryData += "','";
+            insertToHistoryData += "\",\"";
             insertToHistoryData += "0001-01-01 00:00:00Z";
-            insertToHistoryData += "')";
+            insertToHistoryData += "\")";
             Insert(insertToHistoryData);
 
             return;
@@ -365,7 +365,7 @@ namespace TBM_Client_Windows
 			}
 			while (Name.Equals("") == false);
 
-            Delete("DELETE from HISTORYDATA where DATETIME='0001-01-01 00:00:00Z'");
+            Delete("DELETE from HISTORYDATA where DATETIME=\"0001-01-01 00:00:00Z\"");
             Console.Write(m_userList.Count);
             Console.Write("\r\n");
             Console.Write(m_shopList.Count);
