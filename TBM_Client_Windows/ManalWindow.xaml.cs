@@ -25,6 +25,7 @@ namespace TBM_Client_Windows
        public string sqlUserInfoOrderByName = "select * from USERINFO order by USERNAME";
         public string sqlUserInfo = "select * from USERINFO ";
         public string sqlShop = "select * from SHOPINFO order by USERNAME";
+        public string sqlShopNoOrder = "select * from SHOPINFO";
 
         public string searchHistoryData = "select * from HISTORYDATA ";
 
@@ -67,25 +68,25 @@ namespace TBM_Client_Windows
             string TempUserName;
             string TempShopName;
             string TempDataTime;
-                StringBuilder TuserName = new StringBuilder(2048);
-                StringBuilder TuserCount = new StringBuilder(2048);
-                StringBuilder TuserPhone = new StringBuilder(2048);
-                StringBuilder ShopName = new StringBuilder(2048);
-                StringBuilder COSTMONEY = new StringBuilder(2048);
-                StringBuilder COSTMONEYForUser = new StringBuilder(2048);
-                StringBuilder sDateTime = new StringBuilder(2048);
-                GetMsg2(TuserName, TuserCount, TuserPhone, ShopName, COSTMONEY, COSTMONEYForUser, sDateTime);
-                TempUserName = TuserName.ToString();
-                TempShopName = ShopName.ToString();
-                TempDataTime = sDateTime.ToString();
-                if (TempUserName.Equals("") == false || TempShopName.Equals("") == false || TempDataTime.Equals("") == false)
+            StringBuilder TuserName = new StringBuilder(2048);
+            StringBuilder TuserCount = new StringBuilder(2048);
+            StringBuilder TuserPhone = new StringBuilder(2048);
+            StringBuilder ShopName = new StringBuilder(2048);
+            StringBuilder COSTMONEY = new StringBuilder(2048);
+            StringBuilder COSTMONEYForUser = new StringBuilder(2048);
+            StringBuilder sDateTime = new StringBuilder(2048);
+            GetMsg2(TuserName, TuserCount, TuserPhone, ShopName, COSTMONEY, COSTMONEYForUser, sDateTime);
+            TempUserName = TuserName.ToString();
+            TempShopName = ShopName.ToString();
+            TempDataTime = sDateTime.ToString();
+            if (TempUserName.Equals("") == false || TempShopName.Equals("") == false || TempDataTime.Equals("") == false)
+            {
+                if (TempDataTime.Equals("0001-01-01 00:00:00Z") == false)
                 {
-                    if (TempDataTime.Equals("0001-01-01 00:00:00Z") == false)
-                    {
-                        g_number++;
-                        Users.Add(new CInfoList(g_number.ToString(), TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString(), ShopName.ToString(), COSTMONEY.ToString(), COSTMONEYForUser.ToString(), sDateTime.ToString()));
-                    }
+                    g_number++;
+                    Users.Add(new CInfoList(g_number.ToString(), TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString(), ShopName.ToString(), COSTMONEY.ToString(), COSTMONEYForUser.ToString(), sDateTime.ToString()));
                 }
+            }
             if (TempUserName.Equals("") && TempShopName.Equals("") && TempDataTime.Equals("") )
                readDataTimer.Stop();
         }  
@@ -460,7 +461,8 @@ namespace TBM_Client_Windows
             {
                 search += "where USERNAME=\"";
                 search += sUserName;
-                search += "\" ";
+                search += "\"";
+                
                 isSelectName = true;
             }
             else if (sShopName.Equals(""))
@@ -473,8 +475,9 @@ namespace TBM_Client_Windows
                     search += "\" and datetime < \"";
                     search += lastDataTime.ToString("u");
                     search += "\"";
-
                 }
+                else
+                    search += "where DATETIME != '0001-01-01 00:00:00Z'";
                 search += " order by DATETIME";
 
                 Select2(search);
@@ -528,7 +531,6 @@ namespace TBM_Client_Windows
             g_number = 0;
             if (isSelectSuccess)
             {
-
                 readDataTimer.Start(); 
             }
         }

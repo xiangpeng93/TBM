@@ -51,12 +51,17 @@
             <Button Grid.Row="0" Grid.Column="4" Name="backMainWindow" Click="backMainWindows_Click"  Margin="5" Content="返回" FontSize="15" FontFamily="KaiTi" FontWeight="Normal" HorizontalAlignment="Right"/>
             <Button Grid.Row="0" Grid.Column="4" Name="SaveAllData" Click="SaveAllData_Click"  Margin="5" Content="更新信息" FontSize="15" FontFamily="KaiTi" FontWeight="Normal" HorizontalAlignment="Left"/>
         </Grid>
-        <TextBlock Grid.Row="2"></TextBlock>
+        <StackPanel Grid.Row="2">
+            <TextBlock Name="UpdateInfoProcessTextBlock" Text="更新信息进度:0%"></TextBlock>
+            <ProgressBar Name="UpdateProgressBar" Height="20" Margin="5" Minimum="0" Maximum="100" >
+            </ProgressBar>
+        </StackPanel>
         <Grid Grid.Row="3" Margin="5">
             <ListView Name="infoList" HorizontalAlignment="Stretch" Margin="5" >
                 <ListView.ContextMenu>
                     <ContextMenu Name="menu" >
                         <MenuItem Header="删除" Click="MenuItem_Click"></MenuItem>
+                        <MenuItem Name="UpdateData" Header="修改" Click="UpdateData_Click"></MenuItem>
                     </ContextMenu>
                 </ListView.ContextMenu>
                 <ListView.GroupStyle>
@@ -65,6 +70,7 @@
                 <ListView.View>
 
                     <GridView>
+                        <GridViewColumn Width="50" DisplayMemberBinding="{Binding Path=IDNumber}" Header="序号" />
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserName}" Header="名称">
                         </GridViewColumn>
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserCount}">旺旺号</GridViewColumn>

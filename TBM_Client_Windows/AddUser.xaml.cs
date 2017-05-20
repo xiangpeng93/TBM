@@ -54,15 +54,17 @@ namespace TBM_Client_Windows
 			public string userPhone;
 	
 		}
+        private static System.Windows.Threading.DispatcherTimer UpdateUserInfoTimer = new System.Windows.Threading.DispatcherTimer();  
 		List<string> m_shopList = new List<string>();
 		List<userInfo> m_userList = new List<userInfo>();
-
+        static int g_number = 0;
         class CInfoList
         {
-            public CInfoList(string sUserName,
+            public CInfoList(string sIdNumber, string sUserName,
             string sUserCount,
             string sUserPhone)
             {
+                IDNumber = sIdNumber;
                 UserName = sUserName;
                 UserCount = sUserCount;
                 UserPhone = sUserPhone;
@@ -70,12 +72,34 @@ namespace TBM_Client_Windows
             public string UserName { get; set; }
             public string UserCount { get; set; }
             public string UserPhone { get; set; }
+            public string IDNumber { get; set; }
         }
 
         ManalWindow m_manger;
         private ObservableCollection<CInfoList> Users = new ObservableCollection<CInfoList>();
+        bool g_isStartUpdate = false;
+        List<string> UpdateInfoList = new List<string>();
+        public void timerUpdateInfo(object sender, EventArgs e)
+        {
+            if (g_isStartUpdate)
+            {
+                if (UpdateInfoList.Count > 0)
+                {
+                    Insert(UpdateInfoList[0]);
+                    UpdateInfoList.Remove(UpdateInfoList[0]);
+                    UpdateProgressBar.Value++;
+                    int status = (Int32)((UpdateProgressBar.Value / UpdateProgressBar.Maximum) * 100);
+                    UpdateInfoProcessTextBlock.Text = "更新信息进度:" + status.ToString() + "%";
+                    Console.WriteLine(UpdateInfoProcessTextBlock.Text);
+                }
+                else   
+                g_isStartUpdate = false;
+            }
+        }
+
         public AddUser(ManalWindow mangerMoney)
         {
+            g_number = 0;
             m_manger = mangerMoney;
             InitializeComponent();
 
@@ -83,7 +107,7 @@ namespace TBM_Client_Windows
             infoList.ItemsSource = cs;
 
             Users.Clear();
-            Select(m_manger.sqlUserInfo);
+            Select(m_manger.sqlUserInfoOrderByName);
             string Name = "";
 
             do
@@ -95,10 +119,15 @@ namespace TBM_Client_Windows
                 Name = TuserName.ToString();
                 if (Name.Equals("") == false)
                 {
-                    Users.Add(new CInfoList(TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
+                    g_number++;
+                    Users.Add(new CInfoList(g_number.ToString(),TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
                 }
             }
             while (Name.Equals("") == false);
+
+            UpdateUserInfoTimer.Tick += new EventHandler(timerUpdateInfo);
+            UpdateUserInfoTimer.Interval = new TimeSpan(0, 0, 0, 0);
+            UpdateUserInfoTimer.Start();
         }
 
         private void backMainWindows_Click(object sender, RoutedEventArgs e)
@@ -111,6 +140,7 @@ namespace TBM_Client_Windows
         {
             this.Close();
             m_manger.Show();
+            UpdateUserInfoTimer.Stop();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -171,9 +201,9 @@ namespace TBM_Client_Windows
             m_manger.Update();
 
             Users.Clear();
-            Select(m_manger.sqlUserInfo);
+            Select(m_manger.sqlUserInfoOrderByName);
             string Name = "";
-
+            g_number = 0;
             do
             {
                 StringBuilder TuserName = new StringBuilder(2048);
@@ -183,7 +213,8 @@ namespace TBM_Client_Windows
                 Name = TuserName.ToString();
                 if (Name.Equals("") == false)
                 {
-                    Users.Add(new CInfoList(TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
+                    g_number++;
+                    Users.Add(new CInfoList(g_number.ToString(),TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
                 }
             }
             while (Name.Equals("") == false);
@@ -208,7 +239,7 @@ namespace TBM_Client_Windows
             Users.Clear();
             Select(m_manger.sqlShop);
             string Name = "";
-
+            g_number = 0;
             do
             {
                 StringBuilder TuserName = new StringBuilder(2048);
@@ -218,22 +249,49 @@ namespace TBM_Client_Windows
                 Name = TuserName.ToString();
                 if (Name.Equals("") == false)
                 {
-                    Users.Add(new CInfoList(TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
+                    Users.Add(new CInfoList(g_number.ToString(),TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
                 }
             }
             while (Name.Equals("") == false);
 		}
 
+        private bool isInDb(string sql)
+        {
+            Select(sql);
+
+            StringBuilder TuserName = new StringBuilder(2048);
+            StringBuilder TuserCount = new StringBuilder(2048);
+            StringBuilder TuserPhone = new StringBuilder(2048);
+            GetMsg(TuserName, TuserCount, TuserPhone);
+            string tmpName = TuserName.ToString();
+            if (tmpName.Equals("") == false)
+            {
+                return true;
+            }
+            return false;
+        }
 		private void AddToDb_Click(object sender, RoutedEventArgs e)
 		{
 			string cmdSql = "";
 			if (chooseUserOrShop.SelectionBoxItem.Equals("用户"))
 			{
+                string sqlCheckIndb = m_manger.sqlUserInfo + "where USERNAME=\"" + userName.Text + "\" and USERCOUNT=\"" + userCount.Text + "\"";
+                if (isInDb(sqlCheckIndb))
+                {
+                    MessageBox.Show("插入失败,该用户已存在!");
+                    return;
+                }
 				sqlAdd_Click(sender, e);
-				cmdSql = m_manger.sqlUserInfo;
+                cmdSql = m_manger.sqlUserInfoOrderByName;
 			}
 			if (chooseUserOrShop.SelectionBoxItem.Equals("商户"))
 			{
+                string sqlCheckIndb = m_manger.sqlShopNoOrder + " where USERNAME=\"" + userName.Text + "\" and USERCOUNT=\"" + userCount.Text + "\"";
+                if (isInDb(sqlCheckIndb))
+                {
+                    MessageBox.Show("插入失败,该用户已存在!");
+                    return;
+                }
 				AddShop_Click(sender, e);
 				cmdSql = m_manger.sqlShop;
 			}
@@ -246,7 +304,7 @@ namespace TBM_Client_Windows
 
 			Select(cmdSql);
 			string Name = "";
-
+            g_number = 0;
             do
             {
                 StringBuilder TuserName = new StringBuilder(2048);
@@ -256,30 +314,30 @@ namespace TBM_Client_Windows
                 Name = TuserName.ToString();
                 if (Name.Equals("") == false)
                 {
-                    Users.Add(new CInfoList(TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
+                    g_number++;
+                    Users.Add(new CInfoList(g_number.ToString(),TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
                 }
             }
             while (Name.Equals("") == false);
 		}
+        public void Search_Click_public()
+        {
+            string selectSql = "";
+            if (chooseUserOrShop.SelectionBoxItem.Equals("用户"))
+            {
+                selectSql = m_manger.sqlUserInfoOrderByName;
+            }
+            if (chooseUserOrShop.SelectionBoxItem.Equals("商户"))
+            {
+                selectSql = m_manger.sqlShop;
+            }
 
-		private void search_Click(object sender, RoutedEventArgs e)
-		{
-			string selectSql = "";
-			if(chooseUserOrShop.SelectionBoxItem.Equals("用户"))
-			{
-				selectSql = m_manger.sqlUserInfo;
-			}
-			if (chooseUserOrShop.SelectionBoxItem.Equals("商户"))
-			{
-				selectSql = m_manger.sqlShop;
-			}
-
-			m_manger.Update();
+            m_manger.Update();
 
             Users.Clear();
             Select(selectSql);
             string Name = "";
-
+            g_number = 0;
             do
             {
                 StringBuilder TuserName = new StringBuilder(2048);
@@ -289,11 +347,17 @@ namespace TBM_Client_Windows
                 Name = TuserName.ToString();
                 if (Name.Equals("") == false)
                 {
-                    Users.Add(new CInfoList(TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
+                    g_number++;
+                    Users.Add(new CInfoList(g_number.ToString(), TuserName.ToString(), TuserCount.ToString(), TuserPhone.ToString()));
                 }
             }
             while (Name.Equals("") == false);
+        }
+		private void search_Click(object sender, RoutedEventArgs e)
+		{
+            Search_Click_public();
 		}
+    
 		private void InsertIfNotExit(string name,string count,string phone,string shop)
 		{
             string insertToHistoryData = "INSERT INTO HISTORYDATA (USERNAME , USERCOUNT , USERPHONE ,SHOPNAME, COSTMONEY ,COSTMONEYFORUSER ,DATETIME) VALUES";
@@ -313,75 +377,121 @@ namespace TBM_Client_Windows
             insertToHistoryData += "\",\"";
             insertToHistoryData += "0001-01-01 00:00:00Z";
             insertToHistoryData += "\")";
-            Insert(insertToHistoryData);
+            UpdateInfoList.Add(insertToHistoryData);
+            
 
             return;
 		}		
 
 		private void updateAllInfo()
 		{
-			string selectSql = "";
-			selectSql = m_manger.sqlShop;	
-			m_manger.Update();
-			Users.Clear();
-			Select(selectSql);
-			string Name = "";
-			do
-			{
-				StringBuilder TuserName = new StringBuilder(2048);
-				StringBuilder TuserCount = new StringBuilder(2048);
-				StringBuilder TuserPhone = new StringBuilder(2048);
-				GetMsg(TuserName, TuserCount, TuserPhone);
-				Name = TuserName.ToString();
-				if (Name.Equals("") == false)
-				{
-					m_shopList.Add(Name);
-					
-				}
-			}
-			while (Name.Equals("") == false);
-
-
-			selectSql = m_manger.sqlUserInfo;	
-			m_manger.Update();
-			Users.Clear();
-			Select(selectSql);
-			do
-			{
-				StringBuilder TuserName = new StringBuilder(2048);
-				StringBuilder TuserCount = new StringBuilder(2048);
-				StringBuilder TuserPhone = new StringBuilder(2048);
-				GetMsg(TuserName, TuserCount, TuserPhone);
-				Name = TuserName.ToString();
-				if (Name.Equals("") == false)
-				{
-					userInfo UserInfoTemp = new userInfo();
-					UserInfoTemp.userName = TuserName.ToString();
-					UserInfoTemp.userCount = TuserCount.ToString();
-					UserInfoTemp.userPhone = TuserPhone.ToString();
-					m_userList.Add(UserInfoTemp);
-					
-				}
-			}
-			while (Name.Equals("") == false);
-
             Delete("DELETE from HISTORYDATA where DATETIME=\"0001-01-01 00:00:00Z\"");
             Console.Write(m_userList.Count);
             Console.Write("\r\n");
             Console.Write(m_shopList.Count);
             Console.Write("\r\n");
+            //UpdateProgressBar.Maximum = m_userList.Count * m_shopList.Count;
 			foreach (var useritem in m_userList)
 			{
 				foreach (var shopitem in m_shopList)
 				{
 					InsertIfNotExit(useritem.userName, useritem.userCount, useritem.userPhone, shopitem.ToString());
+                    //UpdateProgressBar.Value++;
+                    //UpdateInfoProcessTextBlock.Text = "更新信息进度:" + ((UpdateProgressBar.Value / UpdateProgressBar.Maximum)*100).ToString() + "%";
+                    Console.WriteLine("更新信息进度:" + "%");
 				}
 			}
-}
+           
+        }
 
 		private void SaveAllData_Click(object sender, RoutedEventArgs e)
 		{
-			updateAllInfo();
+            UpdateProgressBar.Value = 0;
+            string selectSql = "";
+            selectSql = m_manger.sqlShop;
+            m_manger.Update();
+            Users.Clear();
+            Select(selectSql);
+            string Name = "";
+            do
+            {
+                StringBuilder TuserName = new StringBuilder(2048);
+                StringBuilder TuserCount = new StringBuilder(2048);
+                StringBuilder TuserPhone = new StringBuilder(2048);
+                GetMsg(TuserName, TuserCount, TuserPhone);
+                Name = TuserName.ToString();
+                if (Name.Equals("") == false)
+                {
+                    m_shopList.Add(Name);
+
+                }
+            }
+            while (Name.Equals("") == false);
+
+
+            selectSql = m_manger.sqlUserInfo;
+            m_manger.Update();
+            Users.Clear();
+            Select(selectSql);
+            do
+            {
+                StringBuilder TuserName = new StringBuilder(2048);
+                StringBuilder TuserCount = new StringBuilder(2048);
+                StringBuilder TuserPhone = new StringBuilder(2048);
+                GetMsg(TuserName, TuserCount, TuserPhone);
+                Name = TuserName.ToString();
+                if (Name.Equals("") == false)
+                {
+                    userInfo UserInfoTemp = new userInfo();
+                    UserInfoTemp.userName = TuserName.ToString();
+                    UserInfoTemp.userCount = TuserCount.ToString();
+                    UserInfoTemp.userPhone = TuserPhone.ToString();
+                    m_userList.Add(UserInfoTemp);
+
+                }
+            }
+            while (Name.Equals("") == false);
+            Delete("DELETE from HISTORYDATA where DATETIME=\"0001-01-01 00:00:00Z\"");
+
+            Console.Write(m_userList.Count);
+            Console.Write("\r\n");
+            Console.Write(m_shopList.Count);
+            Console.Write("\r\n");
+            UpdateProgressBar.Maximum = m_userList.Count * m_shopList.Count;
+            foreach (var useritem in m_userList)
+            {
+                foreach (var shopitem in m_shopList)
+                {
+                    InsertIfNotExit(useritem.userName, useritem.userCount, useritem.userPhone, shopitem.ToString());
+                   
+                }
+            }
+
+            g_isStartUpdate = true;
+
 		}
+
+        private void UpdateData_Click(object sender, RoutedEventArgs e)
+        {
+            object o = infoList.SelectedItem;
+            if (o == null)
+            {
+                MessageBox.Show("列表为空！");
+                return;
+            }
+
+            CInfoList item = o as CInfoList;
+            if (!item.UserName.Equals(""))
+            {
+                UpdateUserWinodw updateHistory = new UpdateUserWinodw(this);
+                updateHistory.SetLocalData(item.UserName, item.UserCount, item.UserPhone);
+                updateHistory.Show();
+                this.IsEnabled = false;
+            }
+            else
+            {
+                MessageBox.Show("名称为空！");
+            }
+        }
     }
 }
