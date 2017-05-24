@@ -114,23 +114,27 @@ int _stdcall Register(char* ip, int port, char *userName, char *userPaswd)
 <cmd_msg></cmd_msg>
 </info>
 */
+bool g_isFirstConnect = true;
 int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 {
-	int nRet = 0;
+	int nRet = 400;
 	g_userName = userName;
 	g_userPaswd = userPaswd;
 	g_ip = ip;
 	g_port = port;
-
-	SOCKADDR_IN clntAddr;
-	clntAddr.sin_family = PF_INET;
-	clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
-	clntAddr.sin_port = htons(g_port);
-	nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
-	if (nRet != 0)
+	if (g_isFirstConnect)
 	{
-		cout << "last error " << GetLastError() << endl;
-		return 400;
+		SOCKADDR_IN clntAddr;
+		clntAddr.sin_family = PF_INET;
+		clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
+		clntAddr.sin_port = htons(g_port);
+		nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
+		if (nRet != 0)
+		{
+			cout << "last error " << GetLastError() << endl;
+			return nRet;
+		}
+		g_isFirstConnect = false;
 	}
 
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "login", "");
@@ -148,11 +152,11 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 			}
 			else if (strcmp(buffer, "timeout") == 0)
 			{
-				return 1;
+				nRet  = 1;
 			}
 			else
 			{
-				return -1;
+				nRet = - 1;
 			}
 		}
 		else
@@ -160,7 +164,7 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 			cout << "nRet : " << nRet << endl;
 		}
 	}
-	return 400;
+	return nRet;
 };
 
 int logout(char *userName, char *userPaswd)

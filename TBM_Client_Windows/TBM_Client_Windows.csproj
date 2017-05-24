@@ -118,6 +118,9 @@
     <Compile Include="updateHistoryData.xaml.cs">
       <DependentUpon>updateHistoryData.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UpdateUserWinodw.xaml.cs">
+      <DependentUpon>UpdateUserWinodw.xaml</DependentUpon>
+    </Compile>
     <Page Include="AddUser.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -149,6 +152,10 @@
     <Page Include="updateHistoryData.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UpdateUserWinodw.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
