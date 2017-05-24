@@ -28,7 +28,7 @@ namespace TBM_Client_Windows
 		public static extern int Login(string ip, int port,string userName, string paswd);
 
 		[DllImport("TBMClient", EntryPoint="Register", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-		public static extern int Register(string ip, int port,string userName, string paswd);
+		public static extern int Register(string ip, int port,string userName, string paswd,string cmd);
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -126,7 +126,7 @@ namespace TBM_Client_Windows
 				}
 
 				int port = Int32.Parse(textBox_port.Text);
-				int nRet = Register(textBox_ip.Text,port,textBox_user.Text.ToString(), passwdBox_passwd.Password.ToString());
+				int nRet = Register(textBox_ip.Text,port,textBox_user.Text.ToString(), passwdBox_passwd.Password.ToString(),"");
 				if (200 == nRet)
 				{
 					text_user_paswd_msg.Text = "注册成功，请进行登录.";

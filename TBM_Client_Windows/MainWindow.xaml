@@ -65,7 +65,7 @@
             <StackPanel HorizontalAlignment="Right" Width="150" Margin="0,0,10,10" VerticalAlignment="Bottom">
             <DockPanel Name="dockPanel_ip" Visibility="Hidden">
                     <TextBlock Text="地址:"   VerticalAlignment="Center" Height="15"  FontSize="13" Margin="0,2,10,2" Foreground="LightGray"></TextBlock>
-                    <TextBox Name="textBox_ip" Text="119.29.62.135"  Height="15"  FontSize="10" Margin="1" Foreground="Black"></TextBox>
+                    <TextBox Name="textBox_ip" Text="127.0.0.1"  Height="15"  FontSize="10" Margin="1" Foreground="Black"></TextBox>
             </DockPanel>
                 <DockPanel Name="dockPanel_port" Visibility="Hidden">
                     <TextBlock Text="端口:"   VerticalAlignment="Center" Height="15"  FontSize="13" Margin="0,2,10,2" Foreground="LightGray"></TextBlock>

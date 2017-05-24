@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include"../TBMServer/TBMServer.h"
-#pragma comment (lib,"../release/TBMServer")
+#pragma comment (lib,"../debug/TBMServer")
 #include <iostream>
 using namespace std;
 #include <Windows.h>

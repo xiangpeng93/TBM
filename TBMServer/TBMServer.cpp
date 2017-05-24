@@ -31,7 +31,7 @@ using namespace std;
 
 #define USER_DB "user.db"
 #define CREATE_USER_DB_TABLE  "CREATE TABLE IF NOT EXISTS USER_INFO (id INTEGER PRIMARY KEY, USERNAME TEXT, USERCOUNT TEXT, USERPHONE TEXT, PASSWD TEXT, DB_PATH TEXT, REV TEXT)"
-#define INSERT_USER_INO "INSERT INTO USER_INFO(USERNAME,PASSWD,DB_PATH) VALUES('%s','%s','%s');"
+#define INSERT_USER_INO "INSERT INTO USER_INFO(USERNAME,PASSWD,DB_PATH,REV) VALUES('%s','%s','%s','%s');"
 #define DELETE_USER_INO "DELETE FROM USER_INFO WHERE USERNAME='%s' and PASSWD='%s';"
 
 //ע���û������ʹ��
@@ -311,7 +311,7 @@ public:
 		if (m_mapUserConnect.find(id) == m_mapUserConnect.end())
 		{
 			UserConnect *usc = new UserConnect(name.c_str());
-			m_mapUserConnect[id] = usc;
+			m_mapUserConnect.insert(pair<int, UserConnect *>(id, usc));
 			return 0;
 		}
 		cout << "id is exist!" << id<< endl;
@@ -541,7 +541,7 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 			{
 				if (cXml.GetData() == "register")
 				{
-					if( 0 == DoRegister(user_name, user_pswd))
+					if( 200 == DoRegister(user_name, user_pswd))
 						send(clnt_sock, "success", strlen("success") + 1, 0);
 					else
 						send(clnt_sock, "failed", strlen("failed") + 1, 0);
@@ -728,6 +728,8 @@ DWORD  CALLBACK CheckConnectTimer(PVOID pvoid)
 
 int __stdcall init_tbmServer()
 {
+	
+
 	int nRet = -1;
 	WSAData wsData;
 	nRet = WSAStartup(MAKEWORD(2, 2), &wsData);
@@ -845,6 +847,7 @@ void close_db(sqlite3 *db)
 
 int get_all_user_info()
 {
+
 	char** pResult;
 	int nRow;
 	int nCol;
@@ -932,8 +935,13 @@ int DoRegister(string name,string pswd)
 	}
 	else
 	{
+		time_t timeNowt = time(0);
+		tm *timeNow = gmtime((const time_t*)&timeNowt);
+		char strDate[MAX_PATH] = { 0 };
+		sprintf(strDate, "%d-%d-%d %d:%d:%d", timeNow->tm_year + 1900, timeNow->tm_mon + 2, timeNow->tm_mday, timeNow->tm_hour, timeNow->tm_min, timeNow->tm_sec);
+		cout << strDate << endl;
 		char cmd[1024] = { 0 };
-		sprintf(cmd, INSERT_USER_INO, name.c_str(), pswd.c_str(),name.c_str());
+		sprintf(cmd, INSERT_USER_INO, name.c_str(), pswd.c_str(), name.c_str(), strDate);
 		nResult = sqlite3_exec(g_db, cmd, NULL, NULL, &g_errMsg);
 		if (nResult != SQLITE_OK)
 		{
@@ -941,11 +949,12 @@ int DoRegister(string name,string pswd)
 			sqlite3_free(g_errMsg);
 			return -1;
 		}
+		
 		cout << "register success . " << name.c_str() << " " << pswd.c_str();
 	}
 	//������Ϣ
 	get_all_user_info();
-	return 0;
+	return 200;
 }
 
 

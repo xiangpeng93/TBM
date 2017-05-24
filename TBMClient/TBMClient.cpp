@@ -22,9 +22,9 @@ int g_port = 0;
 
 int g_clntSock = -1;
 mutex g_mutex;
+bool g_isFirstConnect = true;
 
-
-
+void initSocket();
 typedef struct msgRecvStruct
 {
 	string userName;
@@ -60,33 +60,39 @@ string assemblyMsg(const char *userName, const char *paswd, const char* cmd, con
 <cmd_msg></cmd_msg>
 </info>
 */
-int _stdcall Register(char* ip, int port, char *userName, char *userPaswd)
+int _stdcall Register(char* ip, int port, char *userName, char *userPaswd,char *cmd)
 {
+	cout << "register " << endl;
 	int nRet = 0;
 	g_userName = userName;
 	g_userPaswd = userPaswd;
 	g_ip = ip;
 	g_port = port;
-
-	SOCKADDR_IN clntAddr;
-	clntAddr.sin_family = PF_INET;
-	clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
-	clntAddr.sin_port = htons(g_port);
-	nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
-	if (nRet != 0)
+	if (g_clntSock == -1)
 	{
-		cout << "last error " << GetLastError() << endl;
-		return 400;
+		initSocket();
+		SOCKADDR_IN clntAddr;
+		clntAddr.sin_family = PF_INET;
+		clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
+		clntAddr.sin_port = htons(g_port);
+		nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
+		if (nRet != 0)
+		{
+			cout << "last error " << GetLastError() << endl;
+			return 400;
+		}
 	}
 
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "register", "");
 	nRet = send(g_clntSock, req.c_str(), req.length() + 1, 0);
+	cout << "send buffer :" << req.c_str() << endl;
 	if (nRet != -1)
 	{
 		char buffer[1500] = { 0 };
 		int bufferSize = 1500 - 1;
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
+			cout << "recv buffer : " << buffer << endl;
 			if (strcmp(buffer, "success") == 0)
 			{
 				nRet = 200;
@@ -102,6 +108,7 @@ int _stdcall Register(char* ip, int port, char *userName, char *userPaswd)
 		}
 	}
 	closesocket(g_clntSock);
+	g_clntSock = -1;
 	return nRet;
 }
 
@@ -114,7 +121,7 @@ int _stdcall Register(char* ip, int port, char *userName, char *userPaswd)
 <cmd_msg></cmd_msg>
 </info>
 */
-bool g_isFirstConnect = true;
+
 int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 {
 	int nRet = 400;
@@ -122,8 +129,9 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 	g_userPaswd = userPaswd;
 	g_ip = ip;
 	g_port = port;
-	if (g_isFirstConnect)
+	if (g_clntSock == -1)
 	{
+		initSocket();
 		SOCKADDR_IN clntAddr;
 		clntAddr.sin_family = PF_INET;
 		clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
@@ -132,9 +140,8 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 		if (nRet != 0)
 		{
 			cout << "last error " << GetLastError() << endl;
-			return nRet;
+			return 400;
 		}
-		g_isFirstConnect = false;
 	}
 
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "login", "");
@@ -146,6 +153,7 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 		int bufferSize = 1500 - 1;
 		nRet = recv(g_clntSock, buffer, bufferSize, 0);
 		if (nRet > 0){
+			cout << "recv :" << buffer<<endl;
 			if (strcmp(buffer, "success") == 0)
 			{
 				return 200;
@@ -174,6 +182,18 @@ int logout(char *userName, char *userPaswd)
 	return 0;
 };
 
+void initSocket()
+{
+	g_clntSock = socket(PF_INET, SOCK_STREAM, 0);
+	if (g_clntSock == INVALID_SOCKET)
+	{
+		cout << "invalid socket" << endl;
+		return;
+	}
+	int timeout = 1000; //3s
+	setsockopt(g_clntSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+	setsockopt(g_clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
+}
 void __stdcall Init()
 {
 	int nRet = -1;
@@ -184,17 +204,6 @@ void __stdcall Init()
 		cout << "last error " << GetLastError() << endl;
 	}
 	
-	g_clntSock = socket(PF_INET, SOCK_STREAM, 0);
-	if (g_clntSock == INVALID_SOCKET)
-	{
-		cout << "invalid socket" << endl;
-		nRet = INVALID_SOCKET;
-
-		return;
-	}
-	int timeout = 0; //3s
-	setsockopt(g_clntSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
-	setsockopt(g_clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
 }
 
 void __stdcall Fini()
