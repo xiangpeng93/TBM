@@ -56,6 +56,60 @@ string assemblyMsg(const char *userName, const char *paswd, const char* cmd, con
 <user_name>xp335</user_name>
 <user_pswd>2</user_pswd>
 <cmd>common</cmd>
+<user_cmd>register</user_cmd>
+<cmd_msg></cmd_msg>
+</info>
+*/
+int _stdcall Register(char* ip, int port, char *userName, char *userPaswd)
+{
+	int nRet = 0;
+	g_userName = userName;
+	g_userPaswd = userPaswd;
+	g_ip = ip;
+	g_port = port;
+
+	SOCKADDR_IN clntAddr;
+	clntAddr.sin_family = PF_INET;
+	clntAddr.sin_addr.s_addr = inet_addr(g_ip.c_str());
+	clntAddr.sin_port = htons(g_port);
+	nRet = connect(g_clntSock, (sockaddr*)&clntAddr, sizeof(clntAddr));
+	if (nRet != 0)
+	{
+		cout << "last error " << GetLastError() << endl;
+		return 400;
+	}
+
+	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "register", "");
+	nRet = send(g_clntSock, req.c_str(), req.length() + 1, 0);
+	if (nRet != -1)
+	{
+		char buffer[1500] = { 0 };
+		int bufferSize = 1500 - 1;
+		nRet = recv(g_clntSock, buffer, bufferSize, 0);
+		if (nRet > 0){
+			if (strcmp(buffer, "success") == 0)
+			{
+				nRet = 200;
+			}
+			else
+			{
+				nRet = - 1;
+			}
+		}
+		else
+		{
+			cout << "nRet : " << nRet << endl;
+		}
+	}
+	closesocket(g_clntSock);
+	return nRet;
+}
+
+/*
+<info>
+<user_name>xp335</user_name>
+<user_pswd>2</user_pswd>
+<cmd>common</cmd>
 <user_cmd>login</user_cmd>
 <cmd_msg></cmd_msg>
 </info>
@@ -80,6 +134,7 @@ int __stdcall Login(char* ip, int port,char *userName, char *userPaswd)
 	}
 
 	string req = assemblyMsg(g_userName.c_str(), g_userPaswd.c_str(), "common", "login", "");
+	cout << req.c_str() << endl;
 	nRet = send(g_clntSock, req.c_str(), req.length() + 1, 0);
 	if (nRet != -1)
 	{

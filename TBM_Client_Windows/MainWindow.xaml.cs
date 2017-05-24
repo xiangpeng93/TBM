@@ -24,8 +24,11 @@ namespace TBM_Client_Windows
 		[DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
 		public static extern void Init();
 
-		[DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+		[DllImport("TBMClient", EntryPoint="Login",CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
 		public static extern int Login(string ip, int port,string userName, string paswd);
+
+		[DllImport("TBMClient", EntryPoint="Register", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+		public static extern int Register(string ip, int port,string userName, string paswd);
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -110,7 +113,35 @@ namespace TBM_Client_Windows
 
 		private void btn_register_Click(object sender, RoutedEventArgs e)
 		{
-			text_user_paswd_msg.Text = "请联系管理员.";
+			if (passwdBox_passwd.Password.Equals("") || textBox_user.Text.Equals(""))
+			{
+				text_user_paswd_msg.Text = "用户名密码不能为空.";
+			}
+			else
+			{
+				if (textBox_ip.Text.Equals("") || textBox_port.Text.Equals(""))
+				{
+					text_user_paswd_msg.Text = "服务器地址端口不能为空.";
+					return;
+				}
+
+				int port = Int32.Parse(textBox_port.Text);
+				int nRet = Register(textBox_ip.Text,port,textBox_user.Text.ToString(), passwdBox_passwd.Password.ToString());
+				if (200 == nRet)
+				{
+					text_user_paswd_msg.Text = "注册成功，请进行登录.";
+				}
+				else if (-1 == nRet)
+				{
+					text_user_paswd_msg.Text = "注册失败，该用户已经注册.";
+				}
+				else
+				{
+					text_user_paswd_msg.Text = "登录失败，服务器错误.";
+				}
+				//MessageBox.Show(textBox_user.Text.ToString());
+				//MessageBox.Show(passwdBox_passwd.Password.ToString());
+			}
 		}
 
 		private void img_max_btn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

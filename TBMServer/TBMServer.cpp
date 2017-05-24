@@ -541,7 +541,10 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 			{
 				if (cXml.GetData() == "register")
 				{
-					DoRegister(user_name, user_pswd);
+					if( 0 == DoRegister(user_name, user_pswd))
+						send(clnt_sock, "success", strlen("success") + 1, 0);
+					else
+						send(clnt_sock, "failed", strlen("failed") + 1, 0);
 				}
 
 				if (cXml.GetData() == "login")
