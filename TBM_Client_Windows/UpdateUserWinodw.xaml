@@ -10,8 +10,8 @@
             <TextBlock Text="旺旺号：" Margin="5" VerticalAlignment="Center"></TextBlock>
             <TextBox Name="usercount" Width="80" VerticalAlignment="Center"></TextBox>
 
-            <TextBlock Text="手机：" Margin="5" VerticalAlignment="Center"></TextBlock>
-            <TextBox Name="userphone" Width="80" VerticalAlignment="Center"></TextBox>
+            <TextBlock Text="介绍人：" Margin="5" VerticalAlignment="Center"></TextBlock>
+            <ComboBox Name="userParentName" Width="80" VerticalAlignment="Center"></ComboBox>
 
             <Button Name="updateHistoryDataClick" Margin="5" Width="120" VerticalAlignment="Bottom" Click="updateHistoryDataClick_Click"  FontFamily="KaiTi"  FontWeight="Normal" FontSize="15">确认修改</Button>
         </DockPanel>

@@ -75,7 +75,7 @@ namespace TBM_Client_Windows
             public string IDNumber { get; set; }
         }
 
-        ManalWindow m_manger;
+        public ManalWindow m_manger;
         private ObservableCollection<CInfoList> Users = new ObservableCollection<CInfoList>();
         bool g_isStartUpdate = false;
         List<string> UpdateInfoList = new List<string>();
@@ -96,6 +96,33 @@ namespace TBM_Client_Windows
                 g_isStartUpdate = false;
             }
         }
+
+		public void UpdateUserNameList()
+		{
+			userParentName.Items.Clear();
+			Select(m_manger.sqlUserInfoOrderByName);
+			string Name = "";
+			ComboBoxItem comboxIten_userParent = new ComboBoxItem();
+			comboxIten_userParent.Content = "";
+			userParentName.Items.Add(comboxIten_userParent);
+			do
+			{
+				StringBuilder TuserName = new StringBuilder(2048);
+				StringBuilder TuserCount = new StringBuilder(2048);
+				StringBuilder TuserPhone = new StringBuilder(2048);
+				GetMsg(TuserName, TuserCount, TuserPhone);
+				Name = TuserName.ToString();
+				if (Name.Equals("") == false)
+				{
+					ComboBoxItem temp = new ComboBoxItem();
+					temp.Content = Name;
+					userParentName.Items.Add(temp);
+
+				}
+			}
+			while (Name.Equals("") == false);
+			userParentName.SelectedIndex = -1;
+		}
 
         public AddUser(ManalWindow mangerMoney)
         {
@@ -128,6 +155,8 @@ namespace TBM_Client_Windows
             UpdateUserInfoTimer.Tick += new EventHandler(timerUpdateInfo);
             UpdateUserInfoTimer.Interval = new TimeSpan(0, 0, 0, 0);
             UpdateUserInfoTimer.Start();
+
+			UpdateUserNameList();
         }
 
         private void backMainWindows_Click(object sender, RoutedEventArgs e)
@@ -194,7 +223,7 @@ namespace TBM_Client_Windows
                 sql += "\",\"";
                 sql += userCount.Text;
                 sql += "\",\"";
-                sql += userPhone.Text;
+                sql += userParentName.Text;
                 sql += "\")";
                 Insert(sql);
             }
@@ -230,7 +259,7 @@ namespace TBM_Client_Windows
                 sql += "\",\"";
                 sql += userCount.Text;
                 sql += "\",\"";
-                sql += userPhone.Text;
+                sql += userParentName.Text;
                 sql += "\")";
                 Insert(sql);
             }
@@ -297,7 +326,7 @@ namespace TBM_Client_Windows
 			}
             userName.Clear();
             userCount.Clear();
-            userPhone.Clear();
+			userParentName.SelectedIndex = -1;
             Users.Clear();
             
 			//updateAllInfo();
@@ -319,6 +348,7 @@ namespace TBM_Client_Windows
                 }
             }
             while (Name.Equals("") == false);
+			UpdateUserNameList();
 		}
         public void Search_Click_public()
         {
@@ -493,5 +523,10 @@ namespace TBM_Client_Windows
                 MessageBox.Show("名称为空！");
             }
         }
+
+		private void userParentName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
     }
 }

@@ -46,7 +46,7 @@
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Grid.Column="0" Margin="5">姓名</TextBlock>
             <TextBlock Grid.Row="0" Grid.Column="1" Margin="5">旺旺号</TextBlock>
-            <TextBlock Grid.Row="0" Grid.Column="2" Margin="5">手机</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="2" Margin="5">介绍人</TextBlock>
             <TextBlock Grid.Row="0" Grid.Column="3" Margin="5">商户</TextBlock>
             <TextBlock Grid.Row="0" Grid.Column="4" Margin="5">金额</TextBlock>
             <TextBlock Grid.Row="0" Grid.Column="5" Margin="5">佣金</TextBlock>
@@ -55,7 +55,9 @@
             </ComboBox>
 
             <TextBox  Grid.Row="1" Grid.Column="1" Name="userCount"  Margin="1"/>
-            <TextBox Grid.Row="1" Grid.Column="2" Name="userPhone"  Margin="1"/>
+
+            <ComboBox Name="userParentName" Grid.Row="1" Grid.Column="2" Margin="2"  IsEditable="True">
+            </ComboBox>
             <ComboBox Name="shopName" SelectedIndex="0" Grid.Row="1" Grid.Column="3"  Margin="2" SelectionChanged="shopName_SelectionChanged" IsEditable="True">
                 <!--<ComboBoxItem>涵香</ComboBoxItem>
                 <ComboBoxItem>小而美</ComboBoxItem>
@@ -92,7 +94,7 @@
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserName}" Header="名称" />
 
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserCount}" >旺旺号</GridViewColumn>
-                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserPhone}">手机</GridViewColumn>
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=UserPhone}">介绍人</GridViewColumn>
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=ShopName}">商户</GridViewColumn>
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=CostMoney}">金额</GridViewColumn>
                         <GridViewColumn Width="120" DisplayMemberBinding="{Binding Path=CostForUser}">佣金</GridViewColumn>

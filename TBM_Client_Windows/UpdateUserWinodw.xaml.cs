@@ -21,18 +21,56 @@ namespace TBM_Client_Windows
     /// </summary>
     public partial class UpdateUserWinodw : MetroWindow
     {
-        [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        [DllImport("TBMClient.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern void Select(string sql);
+
+        [DllImport("TBMClient.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern void Insert(string sql);
+
+        [DllImport("TBMClient.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern void Delete(string sql);
+
+        [DllImport("TBMClient", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern void GetMsg(StringBuilder userName, StringBuilder userCount, StringBuilder userPhone);
 
 
         AddUser g_addUser;
         string tUserName;
         string tUserCount;
         string tUserPhone;
+
+public void UpdateUserNameList()
+		{
+			userParentName.Items.Clear();
+			Select(g_addUser.m_manger.sqlUserInfoOrderByName);
+			string Name = "";
+			ComboBoxItem comboxIten_userParent = new ComboBoxItem();
+			comboxIten_userParent.Content = "";
+			userParentName.Items.Add(comboxIten_userParent);
+			do
+			{
+				StringBuilder TuserName = new StringBuilder(2048);
+				StringBuilder TuserCount = new StringBuilder(2048);
+				StringBuilder TuserPhone = new StringBuilder(2048);
+				GetMsg(TuserName, TuserCount, TuserPhone);
+				Name = TuserName.ToString();
+				if (Name.Equals("") == false)
+				{
+					ComboBoxItem temp = new ComboBoxItem();
+					temp.Content = Name;
+					userParentName.Items.Add(temp);
+
+				}
+			}
+			while (Name.Equals("") == false);
+			userParentName.SelectedIndex = -1;
+		}
+
         public UpdateUserWinodw(AddUser addUserWin)
         {
             InitializeComponent();
             g_addUser = addUserWin;
+			UpdateUserNameList();
         }
 
         internal void SetLocalData(string name, string count, string phone)
@@ -42,7 +80,8 @@ namespace TBM_Client_Windows
             tUserPhone = phone;
             username.Text = name;
             usercount.Text = count;
-            userphone.Text = phone;
+
+            userParentName.Text = phone;
         }
 
         private void updateHistoryDataClick_Click(object sender, RoutedEventArgs e)
@@ -61,7 +100,7 @@ namespace TBM_Client_Windows
             temp += "\" , ";
 
             temp += "USERPHONE = \"";
-            temp += userphone.Text;
+            temp += userParentName.Text;
 
             temp += "\" WHERE ";
 

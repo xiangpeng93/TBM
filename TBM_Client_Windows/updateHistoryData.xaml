@@ -10,7 +10,7 @@
             <TextBlock Text="旺旺号：" Margin="5" VerticalAlignment="Center"></TextBlock>
             <TextBox Name="usercount" Width="80" VerticalAlignment="Center"></TextBox>
 
-            <TextBlock Text="手机：" Margin="5" VerticalAlignment="Center"></TextBlock>
+            <TextBlock Text="介绍人：" Margin="5" VerticalAlignment="Center"></TextBlock>
             <TextBox Name="userphone" Width="80" VerticalAlignment="Center"></TextBox>
 
 

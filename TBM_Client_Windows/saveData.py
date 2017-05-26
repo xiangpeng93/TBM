@@ -44,7 +44,7 @@ def createFileIfNotExit(fileName):
     
     ws.write(0 , 0, "用户名")
     ws.write(0 , 1, "旺旺号")
-    ws.write(0 , 2, "手机号")
+    ws.write(0 , 2, "介绍人号")
     ws.write(0 , 3, "商户")
     ws.write(0 , 4, "刷单金额")
     ws.write(0 , 5, "佣金")
