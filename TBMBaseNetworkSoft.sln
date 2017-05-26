@@ -24,6 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBM_Client_Windows", "TBM_C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E9F6C83E-91DC-4715-8499-C85A956E152E}"
 	ProjectSection(SolutionItems) = preProject
+		setup.exe = setup.exe
 		TBM_Client.zip = TBM_Client.zip
 	EndProjectSection
 EndProject
