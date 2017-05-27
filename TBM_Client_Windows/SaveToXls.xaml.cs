@@ -34,7 +34,7 @@ namespace TBM_Client_Windows
             dlg.FileName = inputFileName.Text.ToString(); // Default file name
             dlg.DefaultExt = ".xls"; // Default file extension
             dlg.Filter = "Excel 工作薄 (.xls)|*.xls"; // Filter files by extension
-
+			
             // Show save file dialog box
             Nullable<bool> result = dlg.ShowDialog();
             string filename = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
@@ -47,11 +47,15 @@ namespace TBM_Client_Windows
                 var scope = engine.CreateScope();
                 var source = engine.CreateScriptSourceFromFile(filename);
                 source.Execute(scope);
+				var initByFileName = scope.GetVariable<Func<object,object>>("initByFileName");
+
+				var tInfoList = initByFileName(dlg.FileName);
+
                 var insertDataByFileName = scope.GetVariable<Func<object, object, object, object, object, object, object, object, object>>("insertInfoByFileName");
 
                 for (int i = 0; i < g_mangerMoney.Users.Count; i++)
                 {
-                    insertDataByFileName(dlg.FileName, g_mangerMoney.Users[i].UserName, 
+                    insertDataByFileName(tInfoList, g_mangerMoney.Users[i].UserName, 
                         g_mangerMoney.Users[i].UserCount,
                         g_mangerMoney.Users[i].UserPhone,
                         g_mangerMoney.Users[i].ShopName,
@@ -59,7 +63,8 @@ namespace TBM_Client_Windows
                         g_mangerMoney.Users[i].CostForUser,
                         g_mangerMoney.Users[i].DateTime);
                 }
-                
+                var saveInfoListToFile = scope.GetVariable<Func<object,object,object>>("wireFileByList");
+				saveInfoListToFile(dlg.FileName, tInfoList);
                 // Save document
                 outputFileName.Text = dlg.FileName;
             }

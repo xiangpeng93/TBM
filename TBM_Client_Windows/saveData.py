@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*- 
 import sys
+import time
 sys.path.append('C:\\Python27\\lib')
 sys.path.append('C:\\Python27\\lib\\site-packages\\setuptools-26.1.1-py2.7.egg')
 sys.path.append('C:\\Python27\\lib\\site-packages\\xlrd-1.0.0-py2.7.egg')
 sys.path.append('C:\\Python27\\lib\\site-packages\\xlwt-1.2.0-py2.7.egg')
+sys.path.append('C:\\Python27\\lib\\site-packages')
 
 print sys.path
 import xlwt
@@ -53,26 +55,35 @@ def createFileIfNotExit(fileName):
     wb.save(fileName)
 
 def wireFileByList(fileName,listInfo):
+    print "start writeFile"
+    print time.time()
+    print "\r\n"
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Sheet1',cell_overwrite_ok=True)
-    print len(listInfo)
+##    print len(listInfo)
     temp = listInfo[0]
-    print len(temp)
-    print temp[0]
+##    print len(temp)
+##    print temp[0]
     for i in range (0,len(listInfo)):
         for j in range (0,len(listInfo[i])):
-            print str(i) + " " + str(j) + " " + listInfo[i][j]
-            
+##            print str(i) + " " + str(j) + " " + listInfo[i][j]
             ws.write(i,j,listInfo[i][j])
     wb.save(fileName)
-    
-def insertInfoByFileName(fileName,p1,p2,p3,p4,p5,p6,p7):
+    print "end writeFile"
+    print time.time()
+    print "\r\n"
+ 
+def initByFileName(fileName):
     createFileIfNotExit(fileName);
     listInfo = readByFileName(fileName)
+    print "init initByFileName"
+    print time.time()
+    print "\r\n"
+    return listInfo
+
+def insertInfoByFileName(listInfo,p1,p2,p3,p4,p5,p6,p7):
     listTemp = [p1,p2,p3,p4,p5,p6,p7]
     listInfo.append(listTemp)
-    
-    wireFileByList(fileName,listInfo)
 
 def main():
     print u"脚本名：", sys.argv[0]
