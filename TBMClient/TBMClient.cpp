@@ -190,7 +190,7 @@ void initSocket()
 		cout << "invalid socket" << endl;
 		return;
 	}
-	int timeout = 1000; //3s
+	int timeout = 0; //3s
 	setsockopt(g_clntSock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 	setsockopt(g_clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout, sizeof(timeout));
 }
