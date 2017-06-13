@@ -112,6 +112,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AnalyzeData.xaml.cs">
+      <DependentUpon>AnalyzeData.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SaveToXls.xaml.cs">
       <DependentUpon>SaveToXls.xaml</DependentUpon>
     </Compile>
@@ -124,6 +127,10 @@
     <Page Include="AddUser.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="AnalyzeData.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

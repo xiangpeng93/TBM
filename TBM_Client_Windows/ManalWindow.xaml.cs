@@ -836,5 +836,11 @@ isSelectSuccess = true;
 
 			updateHistory.Show();
 		}
+
+		private void windowAnalyzeData_Click(object sender, RoutedEventArgs e)
+		{
+			AnalyzeData winAnalyzeData = new AnalyzeData();
+			winAnalyzeData.Show();
+		}
 	}
 }
