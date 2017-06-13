@@ -564,6 +564,13 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 							return "success";
 						}
 						send(clnt_sock, "success", strlen("success") + 1, 0);
+
+						time_t timeNowt = time(0);
+						tm *timeNow = gmtime((const time_t*)&timeNowt);
+						char strDate[MAX_PATH] = { 0 };
+						sprintf(strDate, "%d-%d-%d %d:%d:%d", timeNow->tm_year + 1900, timeNow->tm_mon + 2, timeNow->tm_mday, timeNow->tm_hour, timeNow->tm_min, timeNow->tm_sec);
+						cout << "1. login success. data :" << strDate << "username :" << user_name.c_str()<<  endl;
+
 						return "success";
 					}
 				}
@@ -572,6 +579,12 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 				{
 					UserConnectManger::GetInstance()->DeleteUserConnectById(clnt_sock);
 					send(clnt_sock, "success", strlen("success") + 1, 0);
+
+					time_t timeNowt = time(0);
+					tm *timeNow = gmtime((const time_t*)&timeNowt);
+					char strDate[MAX_PATH] = { 0 };
+					sprintf(strDate, "%d-%d-%d %d:%d:%d", timeNow->tm_year + 1900, timeNow->tm_mon + 2, timeNow->tm_mday, timeNow->tm_hour, timeNow->tm_min, timeNow->tm_sec);
+					cout << "2. logout success. data :" << strDate << "username :" << user_name.c_str() << endl;
 					return "success";
 				}
 
