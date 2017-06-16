@@ -136,13 +136,13 @@ static int g_IDNumber = 0;
 					var tInfoList = readByFileName(filename.ToString());
 
 					var InfoNum = getInfoListLen(tInfoList);
-					for(int i = 0; i < Int32.Parse(InfoNum.ToString()); i++)
+					for(int i = 5; i < Int32.Parse(InfoNum.ToString()); i++)
 					{
 g_IDNumber++;
 						resultInfo resultMsg = new resultInfo();
 						resultMsg.IDNumber = g_IDNumber.ToString();
-						resultMsg.keyName = getInfoFromListInfo(tInfoList, i, 1).ToString();
-						resultMsg.viewNum = getInfoFromListInfo(tInfoList, i, 7).ToString();
+						resultMsg.keyName = getInfoFromListInfo(tInfoList, i, 0).ToString();
+						resultMsg.viewNum = getInfoFromListInfo(tInfoList, i, 6).ToString();
 						Console.WriteLine(resultMsg.keyName);
 						Console.WriteLine(resultMsg.viewNum);
 						m_resultInfo.Add(resultMsg);
@@ -185,7 +185,7 @@ g_IDNumber++;
 				{
 					if (-1 != item.keyName.ToString().IndexOf(i.ToString()))
 					{
-						iKeyNameNum++;
+						iKeyNameNum += Int32.Parse(item.viewNum);
 					}
 				}
 				if (iKeyNameNum > 0)
