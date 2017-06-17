@@ -43,7 +43,7 @@ namespace TBM_Client_Windows
 				get;
 				set;
 			}
-			public string viewNum
+			public int viewNum
 			{
 				get;
 				set;
@@ -81,7 +81,7 @@ namespace TBM_Client_Windows
 			{
 				IDNumber = sIdNumber;
 				keyName = sUserName;
-				viewNum = sViewNum;
+				viewNum = Int32.Parse(sViewNum);
 			}
 			public resultInfo()
 			{
@@ -142,7 +142,7 @@ g_IDNumber++;
 						resultInfo resultMsg = new resultInfo();
 						resultMsg.IDNumber = g_IDNumber.ToString();
 						resultMsg.keyName = getInfoFromListInfo(tInfoList, i, 0).ToString();
-						resultMsg.viewNum = getInfoFromListInfo(tInfoList, i, 6).ToString();
+						resultMsg.viewNum = Int32.Parse(getInfoFromListInfo(tInfoList, i, 6).ToString());
 						Console.WriteLine(resultMsg.keyName);
 						Console.WriteLine(resultMsg.viewNum);
 						m_resultInfo.Add(resultMsg);
@@ -185,7 +185,7 @@ g_IDNumber++;
 				{
 					if (-1 != item.keyName.ToString().IndexOf(i.ToString()))
 					{
-						iKeyNameNum += Int32.Parse(item.viewNum);
+						iKeyNameNum += item.viewNum;
 					}
 				}
 				if (iKeyNameNum > 0)
@@ -239,6 +239,38 @@ g_IDNumber++;
             {
                 return;
             }
+		}
+		
+        private bool isSortByUp = false;
+		private void listFileResult_Click(object sender, RoutedEventArgs e)
+		{
+			GridViewColumnHeader headerClicked = e.OriginalSource as GridViewColumnHeader;
+			if (headerClicked != null  && headerClicked.Content.Equals("数量"))
+			{
+				if (isSortByUp)
+				{
+					m_resultInfo = new ObservableCollection<resultInfo>(m_resultInfo.OrderBy(p => p.viewNum));
+					isSortByUp = !isSortByUp;
+					for (int i = 1; i <= m_resultInfo.Count; i++)
+					{
+						m_resultInfo[i - 1].IDNumber = i.ToString();
+					}
+					ListCollectionView cs = new ListCollectionView(m_resultInfo);
+					listFileResult.ItemsSource = cs;
+				}
+				else
+				{
+					m_resultInfo = new ObservableCollection<resultInfo>(m_resultInfo.OrderByDescending(p => p.viewNum));
+					isSortByUp = !isSortByUp;
+
+					for (int i = 1; i <= m_resultInfo.Count; i++)
+					{
+						m_resultInfo[i - 1].IDNumber = i.ToString();
+					}
+					ListCollectionView cs = new ListCollectionView(m_resultInfo);
+					listFileResult.ItemsSource = cs;
+				}
+			}
 		}
 
 	}
