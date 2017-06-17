@@ -37,21 +37,16 @@ namespace TBM_Client_Windows
 			
             // Show save file dialog box
             Nullable<bool> result = dlg.ShowDialog();
-            string filename = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            filename = filename.Substring(0, filename.LastIndexOf('\\'));
-            filename += "\\saveData.py";
+           
             // Process save file dialog box results
             if (result == true)
             {
-                var engine = IronPython.Hosting.Python.CreateEngine();
-                var scope = engine.CreateScope();
-                var source = engine.CreateScriptSourceFromFile(filename);
-                source.Execute(scope);
-				var initByFileName = scope.GetVariable<Func<object,object>>("initByFileName");
+               
+				var initByFileName = g_mangerMoney.getScope().GetVariable<Func<object,object>>("initByFileName");
 
 				var tInfoList = initByFileName(dlg.FileName);
 
-                var insertDataByFileName = scope.GetVariable<Func<object, object, object, object, object, object, object, object, object>>("insertInfoByFileName");
+                var insertDataByFileName = g_mangerMoney.getScope().GetVariable<Func<object, object, object, object, object, object, object, object, object>>("insertInfoByFileName");
 
                 for (int i = 0; i < g_mangerMoney.Users.Count; i++)
                 {
@@ -63,7 +58,7 @@ namespace TBM_Client_Windows
                         g_mangerMoney.Users[i].CostForUser,
                         g_mangerMoney.Users[i].DateTime);
                 }
-                var saveInfoListToFile = scope.GetVariable<Func<object,object,object>>("wireFileByList");
+                var saveInfoListToFile = g_mangerMoney.getScope().GetVariable<Func<object,object,object>>("wireFileByList");
 				saveInfoListToFile(dlg.FileName, tInfoList);
                 // Save document
                 outputFileName.Text = dlg.FileName;

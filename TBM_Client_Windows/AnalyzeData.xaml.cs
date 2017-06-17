@@ -92,15 +92,17 @@ namespace TBM_Client_Windows
 		private ObservableCollection<resultInfo> m_resultInfo = new ObservableCollection<resultInfo>();
 		private ObservableCollection<resultInfo> m_searchResultInfo = new ObservableCollection<resultInfo>();
 
-static int g_IDNumber = 0;
-
-		public AnalyzeData()
+		static int g_IDNumber = 0;
+		private ManalWindow m_manalWindow;
+		public AnalyzeData(ManalWindow manalWindow)
 		{
 			InitializeComponent();
 			ListCollectionView cs = new ListCollectionView(m_resultInfo);
 			listFileResult.ItemsSource = cs;
 			ListCollectionView csSearch = new ListCollectionView(m_searchResultInfo);
 			listSearchResult.ItemsSource = csSearch;
+
+m_manalWindow = manalWindow;
 		}
 
 		private void btnSelectFiles_Click(object sender, RoutedEventArgs e)
@@ -113,19 +115,9 @@ static int g_IDNumber = 0;
             Nullable<bool> result = dlg.ShowDialog();
 			if (result == true)
 			{
-				string pyfilename = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-				pyfilename = pyfilename.Substring(0, pyfilename.LastIndexOf('\\'));
-				pyfilename += "\\saveData.py";
-				var engine = IronPython.Hosting.Python.CreateEngine();
-				var scope = engine.CreateScope();
-				var source = engine.CreateScriptSourceFromFile(pyfilename.ToString());
-				source.Execute(scope);
-
-				var readByFileName = scope.GetVariable<Func<object, object>>("readByFileName");
-				var getInfoListLen = scope.GetVariable<Func<object, object>>("getInfoNumFromListInfo");
-				var getInfoFromListInfo = scope.GetVariable<Func<object, object, object, object>>("getInfoFromListInfo");
-			
-
+				var readByFileName = m_manalWindow.getScope().GetVariable<Func<object, object>>("readByFileName");
+				var getInfoListLen = m_manalWindow.getScope().GetVariable<Func<object, object>>("getInfoNumFromListInfo");
+				var getInfoFromListInfo = m_manalWindow.getScope().GetVariable<Func<object, object, object, object>>("getInfoFromListInfo");
 				foreach (var filename in dlg.FileNames)
 				{
 					Console.WriteLine(filename);
@@ -204,21 +196,15 @@ g_IDNumber++;
 			
             // Show save file dialog box
             Nullable<bool> result = dlg.ShowDialog();
-            string filename = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            filename = filename.Substring(0, filename.LastIndexOf('\\'));
-            filename += "\\saveData.py";
+            
             // Process save file dialog box results
             if (result == true)
             {
-                var engine = IronPython.Hosting.Python.CreateEngine();
-                var scope = engine.CreateScope();
-                var source = engine.CreateScriptSourceFromFile(filename);
-                source.Execute(scope);
-				var initByFileName = scope.GetVariable<Func<object,object>>("initByFileNameEx");
+				var initByFileName = m_manalWindow.getScope().GetVariable<Func<object,object>>("initByFileNameEx");
 
 				var tInfoList = initByFileName(dlg.FileName);
 
-                var insertDataByFileName = scope.GetVariable<Func<object, object, object, object, object, object, object, object, object>>("insertInfoByFileName");
+                var insertDataByFileName = m_manalWindow.getScope().GetVariable<Func<object, object, object, object, object, object, object, object, object>>("insertInfoByFileName");
 
                 for (int i = 0; i < m_searchResultInfo.Count; i++)
                 {
@@ -230,7 +216,7 @@ g_IDNumber++;
                         "",
                         "");
                 }
-                var saveInfoListToFile = scope.GetVariable<Func<object,object,object>>("wireFileByList");
+                var saveInfoListToFile = m_manalWindow.getScope().GetVariable<Func<object,object,object>>("wireFileByList");
 				saveInfoListToFile(dlg.FileName, tInfoList);
                 // Save document
                 MessageBox.Show("保存成功.");

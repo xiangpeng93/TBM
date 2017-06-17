@@ -157,13 +157,26 @@ namespace TBM_Client_Windows
 				set;
 			}
 		}
+		private Microsoft.Scripting.Hosting.ScriptScope m_scope = null;
+
+		public Microsoft.Scripting.Hosting.ScriptScope getScope()
+		{
+			return m_scope;
+		}
+
 		public ManalWindow()
 		{
 			InitializeComponent();
 			ListCollectionView cs = new ListCollectionView(Users);
 			infoList.ItemsSource = cs;
 
-
+			string filename = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+			filename = filename.Substring(0, filename.LastIndexOf('\\'));
+			filename += "\\saveData.py";
+			var engine = IronPython.Hosting.Python.CreateEngine();
+			m_scope = engine.CreateScope();
+			var source = engine.CreateScriptSourceFromFile(filename.ToString());
+			source.Execute(m_scope);
 
 			userName.Items.Clear();
 			userParentName.Items.Clear();
@@ -839,7 +852,7 @@ isSelectSuccess = true;
 
 		private void windowAnalyzeData_Click(object sender, RoutedEventArgs e)
 		{
-			AnalyzeData winAnalyzeData = new AnalyzeData();
+			AnalyzeData winAnalyzeData = new AnalyzeData(this);
 			winAnalyzeData.Show();
 		}
 	}
