@@ -134,7 +134,15 @@ g_IDNumber++;
 						resultInfo resultMsg = new resultInfo();
 						resultMsg.IDNumber = g_IDNumber.ToString();
 						resultMsg.keyName = getInfoFromListInfo(tInfoList, i, 0).ToString();
-						resultMsg.viewNum = Int32.Parse(getInfoFromListInfo(tInfoList, i, 6).ToString());
+						try
+						{
+							resultMsg.viewNum = Int32.Parse(getInfoFromListInfo(tInfoList, i, 6).ToString());
+						}
+						catch
+						{
+							Console.WriteLine(getInfoFromListInfo(tInfoList, i, 6).ToString());
+						}
+						
 						Console.WriteLine(resultMsg.keyName);
 						Console.WriteLine(resultMsg.viewNum);
 						m_resultInfo.Add(resultMsg);
