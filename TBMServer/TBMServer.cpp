@@ -25,7 +25,7 @@
 
 using namespace std;
 
-//#define DEBUG 0
+//#define DEBUG 1
 #define EXPORT_API __stdcall
 #define MAX_CONNECT 100
 
@@ -208,6 +208,22 @@ public:
 	bool m_isSelectSuccess;
 };
 
+void FormatTime(time_t time1 , char *szTime)
+{
+	struct tm tm1;
+
+
+#ifdef WIN32  
+	tm1 = *localtime(&time1);
+#else  
+	localtime_r(&time1 , &tm1);
+#endif  
+	sprintf(szTime , "%4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d " ,
+		tm1.tm_year + 1900 , tm1.tm_mon + 1 , tm1.tm_mday ,
+		tm1.tm_hour , tm1.tm_min , tm1.tm_sec);
+}
+
+
 
 void ProcessSelectThread(void * uscn, string name, string pswd, string sql)
 {
@@ -308,6 +324,7 @@ public:
 	int AddUserConnect(int id, string name)
 	{
 		AutoLock autoLock(&m_user_connect_manger_mutex);
+		cout << "m_mapUserConnect size " << m_mapUserConnect.size() << endl;
 		if (m_mapUserConnect.find(id) == m_mapUserConnect.end())
 		{
 			UserConnect *usc = new UserConnect(name.c_str());
@@ -382,12 +399,18 @@ public:
 
 		map<int, UserConnect*>::iterator iter = m_mapUserConnect.begin();
 
-		for (; iter != m_mapUserConnect.end(); iter++)
+		for (; iter != m_mapUserConnect.end(); )
 		{
 			if (-1 == send(iter->first, " ", 1, 0))
 			{
 				closeSockById(iter->first);
-				m_mapUserConnect.erase(iter++);
+				delete m_mapUserConnect [ iter->first ];
+				m_mapUserConnect [ iter->first ] = NULL;
+				iter = m_mapUserConnect.erase(iter);
+			}
+			else
+			{
+				iter++;
 			}
 		}
 	}
@@ -415,10 +438,7 @@ bool isFindInUserInfoMap(string user_name, string user_pswd)
 
 string ProcessSelect(int clnt_sock, const char *buffer)
 {
-#ifdef DEBUG
-
 	cout << "ProcessSelect " << endl;
-#endif
 	CMarkupSTL cXml;
 	cXml.SetDoc(buffer);
 
@@ -516,10 +536,8 @@ time_t StringToDatetime(const char *str)
 
 string ProcessCommonCmd(int clnt_sock, const char *buffer)
 {
-#ifdef DEBUG
-
 	cout << "ProcessCommonCmd " << endl;
-#endif
+
 	CMarkupSTL cXml;
 	cXml.SetDoc(buffer);
 
@@ -565,10 +583,9 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 						}
 						send(clnt_sock, "success", strlen("success") + 1, 0);
 
-						time_t timeNowt = time(0);
-						tm *timeNow = gmtime((const time_t*)&timeNowt);
 						char strDate[MAX_PATH] = { 0 };
-						sprintf(strDate, "%d-%d-%d %d:%d:%d", timeNow->tm_year + 1900, timeNow->tm_mon + 2, timeNow->tm_mday, timeNow->tm_hour, timeNow->tm_min, timeNow->tm_sec);
+						FormatTime(time(0) , strDate);
+
 						cout << "1. login success. data :" << strDate << "username :" << user_name.c_str()<<  endl;
 
 						return "success";
@@ -580,10 +597,9 @@ string ProcessCommonCmd(int clnt_sock, const char *buffer)
 					UserConnectManger::GetInstance()->DeleteUserConnectById(clnt_sock);
 					send(clnt_sock, "success", strlen("success") + 1, 0);
 
-					time_t timeNowt = time(0);
-					tm *timeNow = gmtime((const time_t*)&timeNowt);
 					char strDate[MAX_PATH] = { 0 };
-					sprintf(strDate, "%d-%d-%d %d:%d:%d", timeNow->tm_year + 1900, timeNow->tm_mon + 2, timeNow->tm_mday, timeNow->tm_hour, timeNow->tm_min, timeNow->tm_sec);
+					FormatTime(time(0) , strDate);
+
 					cout << "2. logout success. data :" << strDate << "username :" << user_name.c_str() << endl;
 					return "success";
 				}
@@ -624,6 +640,8 @@ fd_set freads;
 void closeSockById(int i)
 {
 	AutoLock autoLock(&g_mutex);
+
+	
 	if (FD_ISSET(i, &freads))
 	{
 		FD_CLR(i, &freads);
@@ -724,6 +742,7 @@ void ProcessMsg()
 			}
 		}
 	}
+	cout << "ProcessMsg return ." << endl;
 }
 
 DWORD  CALLBACK CheckConnectTimer(PVOID pvoid)
@@ -922,10 +941,10 @@ int get_all_user_info()
 			}
 
 			++nIndex;
-			cout << strOut.c_str();
+			//cout << strOut.c_str();
 		}
 		g_user_info_map[tempStruct.name] = tempStruct;
-		cout << endl;
+		//cout << endl;
 	}
 	sqlite3_free_table(pResult);  //ʹ���������ͷ�Ϊ��¼������ڴ棬������ڴ�й©
 	return 0;
